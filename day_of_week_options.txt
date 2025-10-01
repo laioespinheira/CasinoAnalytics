@@ -1,0 +1,644 @@
+Here are two additional Day of Week table options to add to BasicDashboard.jsx:
+
+## Option 2: Modern Striped Table with Bold Weekend Columns
+
+Replace lines 662-910 with this content
+
+{/* Option 2: Modern Striped Table with Bold Weekend Columns */}
+<div style={{
+  background: 'white',
+  padding: '2rem',
+  borderRadius: '12px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+  border: '1px solid #e5e7eb'
+}}>
+  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#111827', marginBottom: '0.5rem' }}>
+    Day of Week Performance - Option 2
+  </h3>
+  <p style={{ margin: 0, marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+    Striped rows for easy scanning with weekend emphasis
+  </p>
+  <div style={{ overflowX: 'auto' }}>
+    <table style={{
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '0.875rem'
+    }}>
+      <thead>
+        <tr style={{ background: '#111827' }}>
+          <th style={{
+            textAlign: 'left',
+            padding: '1rem',
+            fontWeight: '700',
+            fontSize: '0.875rem',
+            color: 'white',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>Metric</th>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            return (
+              <th key={day.day} style={{
+                textAlign: 'right',
+                padding: '1rem 0.875rem',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                color: 'white',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                background: isWeekend ? '#7c3aed' : '#111827'
+              }}>{day.day.slice(0, 3)}</th>
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody>
+        {/* Revenue Row */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '1.125rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            borderBottom: '1px solid #e5e7eb'
+          }}>Revenue</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.revenue;
+            const formatted = value >= 1000000
+              ? `$${(value / 1000000).toFixed(2)}M`
+              : `$${(value / 1000).toFixed(0)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '1.125rem 0.875rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        {/* Revenue vs Last Year */}
+        <tr style={{ background: 'white' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            borderBottom: '1px solid #e5e7eb'
+          }}>vs Last Year</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.revenue / day.prevYear.revenue - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        {/* Revenue vs Budget */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 1.125rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            borderBottom: '3px solid #111827'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.revenue / day.budget.revenue - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem 1.125rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderBottom: '3px solid #111827',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+
+        {/* Turnover Row */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '1.125rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            borderBottom: '1px solid #e5e7eb'
+          }}>Turnover</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.turnover;
+            const formatted = value >= 1000000
+              ? `$${(value / 1000000).toFixed(2)}M`
+              : `$${(value / 1000).toFixed(0)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '1.125rem 0.875rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        {/* Turnover vs Last Year */}
+        <tr style={{ background: 'white' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            borderBottom: '1px solid #e5e7eb'
+          }}>vs Last Year</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.turnover / day.prevYear.turnover - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        {/* Turnover vs Budget */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 1.125rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            borderBottom: '3px solid #111827'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.turnover / day.budget.turnover - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem 1.125rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderBottom: '3px solid #111827',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+
+        {/* Patron Hours Row */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '1.125rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            borderBottom: '1px solid #e5e7eb'
+          }}>Patron Hours</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.patronHours;
+            const formatted = value >= 1000000
+              ? `${(value / 1000000).toFixed(2)}M`
+              : `${(value / 1000).toFixed(1)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '1.125rem 0.875rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        {/* Patron Hours vs Last Year */}
+        <tr style={{ background: 'white' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            borderBottom: '1px solid #e5e7eb'
+          }}>vs Last Year</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.patronHours / day.prevYear.patronHours - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderBottom: '1px solid #e5e7eb',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        {/* Patron Hours vs Budget */}
+        <tr style={{ background: '#f9fafb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 1rem 2.5rem',
+            fontSize: '0.8125rem',
+            color: '#6b7280'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.patronHours / day.budget.patronHours - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.875rem 1rem',
+                fontSize: '0.8125rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                borderLeft: isWeekend ? '2px solid #7c3aed' : 'none'
+              }}>
+                <span style={{ fontSize: '1rem', marginRight: '0.25rem' }}>
+                  {isPositive ? '↗' : '↘'}
+                </span>
+                {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+## Option 3: Minimalist Table with Data Density
+
+ADD THIS AFTER OPTION 2:
+
+{/* Option 3: Minimalist Dense Table */}
+<div style={{
+  background: 'white',
+  padding: '2rem',
+  borderRadius: '12px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+  border: '1px solid #e5e7eb'
+}}>
+  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#111827', marginBottom: '0.5rem' }}>
+    Day of Week Performance - Option 3
+  </h3>
+  <p style={{ margin: 0, marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.875rem' }}>
+    Dense data view with maximum information
+  </p>
+  <div style={{ overflowX: 'auto' }}>
+    <table style={{
+      width: '100%',
+      borderCollapse: 'collapse',
+      fontSize: '0.8125rem'
+    }}>
+      <thead>
+        <tr style={{ borderBottom: '2px solid #111827' }}>
+          <th style={{
+            textAlign: 'left',
+            padding: '0.875rem 1rem',
+            fontWeight: '700',
+            fontSize: '0.8125rem',
+            color: '#6b7280',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            background: 'white'
+          }}>Metric</th>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            return (
+              <th key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.875rem 0.75rem',
+                fontWeight: '700',
+                fontSize: '0.8125rem',
+                color: isWeekend ? '#7c3aed' : '#111827',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                borderBottom: '2px solid #111827',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>{day.day}</th>
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody>
+        {/* Revenue Section */}
+        <tr style={{ background: '#f9fafb', borderTop: '8px solid white' }}>
+          <td colSpan={8} style={{
+            padding: '0.625rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>REVENUE</td>
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.75rem 1rem 0.75rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>Current</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.revenue;
+            const formatted = value >= 1000000
+              ? `$${(value / 1000000).toFixed(2)}M`
+              : `$${(value / 1000).toFixed(0)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.75rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs LY</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.revenue / day.prevYear.revenue - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.875rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.revenue / day.budget.revenue - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem 0.875rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+
+        {/* Turnover Section */}
+        <tr style={{ background: '#f9fafb', borderTop: '8px solid white' }}>
+          <td colSpan={8} style={{
+            padding: '0.625rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>TURNOVER</td>
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.75rem 1rem 0.75rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>Current</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.turnover;
+            const formatted = value >= 1000000
+              ? `$${(value / 1000000).toFixed(2)}M`
+              : `$${(value / 1000).toFixed(0)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.75rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs LY</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.turnover / day.prevYear.turnover - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.875rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.turnover / day.budget.turnover - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem 0.875rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+
+        {/* Patron Hours Section */}
+        <tr style={{ background: '#f9fafb', borderTop: '8px solid white' }}>
+          <td colSpan={8} style={{
+            padding: '0.625rem 1rem',
+            fontWeight: '700',
+            color: '#111827',
+            fontSize: '0.875rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>PATRON HOURS</td>
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.75rem 1rem 0.75rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>Current</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const value = day.current.patronHours;
+            const formatted = value >= 1000000
+              ? `${(value / 1000000).toFixed(2)}M`
+              : `${(value / 1000).toFixed(1)}K`;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.75rem',
+                color: '#111827',
+                fontWeight: '700',
+                fontSize: '0.875rem',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {formatted}
+              </td>
+            );
+          })}
+        </tr>
+        <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+          <td style={{
+            padding: '0.625rem 1rem 0.625rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs LY</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.patronHours / day.prevYear.patronHours - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+        <tr>
+          <td style={{
+            padding: '0.625rem 1rem 0.75rem 2rem',
+            color: '#6b7280',
+            fontSize: '0.75rem'
+          }}>vs Budget</td>
+          {metrics.dailyMetrics.map((day, index) => {
+            const isWeekend = index >= 5;
+            const diff = ((day.current.patronHours / day.budget.patronHours - 1) * 100);
+            const isPositive = diff >= 0;
+            return (
+              <td key={day.day} style={{
+                textAlign: 'right',
+                padding: '0.625rem 0.75rem 0.75rem',
+                fontSize: '0.75rem',
+                color: isPositive ? '#10b981' : '#ef4444',
+                fontWeight: '700',
+                background: isWeekend ? '#faf5ff' : 'white'
+              }}>
+                {isPositive ? '↗' : '↘'} {Math.abs(diff).toFixed(1)}%
+              </td>
+            );
+          })}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

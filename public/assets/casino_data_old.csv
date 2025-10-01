@@ -1,0 +1,785 @@
+object_id,machine_type,zone,blender_id,game_type
+SlotMachine_000,Classic,Zone A,Obj_1905,Slots
+SlotMachine_001,eTGs,Pit 8,Obj_890,Slots
+SlotMachine_002,Classic,Zone A,Obj_1906,Slots
+SlotMachine_003,eTGs,Pit 8,Obj_892,Slots
+SlotMachine_004,Classic,Zone A,Obj_1909,Slots
+SlotMachine_005,eTGs,Pit 8,Obj_894,Slots
+SlotMachine_006,Round Banks,Zone A,Obj_972,Slots
+SlotMachine_007,Classic,Zone A,Obj_1910,Slots
+SlotMachine_008,eTGs,Pit 8,Obj_896,Slots
+SlotMachine_009,Classic,Zone A,Obj_1921,Slots
+SlotMachine_010,Classic,Zone A,Obj_1925,Slots
+SlotMachine_011,eTGs,Pit 8,Obj_899,Slots
+SlotMachine_012,eTGs,Pit 8,Obj_901,Slots
+SlotMachine_013,Classic,Zone A,Obj_1926,Slots
+SlotMachine_014,Classic,Zone A,Obj_1929,Slots
+SlotMachine_015,eTGs,Pit 8,Obj_903,Slots
+SlotMachine_016,Round Banks,Zone A,Obj_975,Slots
+SlotMachine_017,Classic,Zone A,Obj_1930,Slots
+SlotMachine_018,Round Banks,Zone A,Obj_977,Slots
+SlotMachine_019,Classic,Zone A,Obj_1941,Slots
+SlotMachine_020,Round Banks,Zone A,Obj_979,Slots
+SlotMachine_021,Classic,Zone A,Obj_1945,Slots
+SlotMachine_022,eTGs,Pit 8,Obj_905,Slots
+SlotMachine_023,Classic,Zone A,Obj_1946,Slots
+SlotMachine_024,eTGs,Pit 8,Obj_907,Slots
+SlotMachine_025,eTGs,Pit 8,Obj_910,Slots
+SlotMachine_026,eTGs,Stage,Obj_726,Slots
+SlotMachine_027,Classic,Zone A,Obj_1949,Slots
+SlotMachine_028,eTGs,Stage,Obj_728,Slots
+SlotMachine_029,eTGs,Stage,Obj_730,Slots
+SlotMachine_030,Round Banks,Zone A,Obj_981,Slots
+SlotMachine_031,Classic,Zone A,Obj_1950,Slots
+SlotMachine_032,Classic,Zone A,Obj_1961,Slots
+SlotMachine_033,Classic,Zone A,Obj_1965,Slots
+SlotMachine_034,eTGs,Stage,Obj_733,Slots
+SlotMachine_035,eTGs,Stage,Obj_735,Slots
+SlotMachine_036,Round Banks,Zone A,Obj_984,Slots
+SlotMachine_037,Round Banks,Zone A,Obj_987,Slots
+SlotMachine_038,Round Banks,Zone A,Obj_989,Slots
+SlotMachine_039,Round Banks,Zone A,Obj_991,Slots
+SlotMachine_040,Classic,Zone A,Obj_1966,Slots
+SlotMachine_041,Classic,Zone A,Obj_1969,Slots
+SlotMachine_042,eTGs,Stage,Obj_770,Slots
+SlotMachine_043,Round Banks,Zone A,Obj_993,Slots
+SlotMachine_044,eTGs,Stage,Obj_772,Slots
+SlotMachine_045,Round Banks,Zone A,Obj_681,Slots
+SlotMachine_046,eTGs,Stage,Obj_774,Slots
+SlotMachine_047,eTGs,Stage,Obj_777,Slots
+SlotMachine_048,Classic,Zone A,Obj_1970,Slots
+SlotMachine_049,eTGs,Stage,Obj_779,Slots
+SlotMachine_050,Round Banks,Zone A,Obj_683,Slots
+SlotMachine_051,eTGs,Stage,Obj_801,Slots
+SlotMachine_052,Classic,Zone A,Obj_1981,Slots
+SlotMachine_053,Classic,Zone A,Obj_1985,Slots
+SlotMachine_054,eTGs,Stage,Obj_803,Slots
+SlotMachine_055,Round Banks,Zone A,Obj_685,Slots
+SlotMachine_056,Round Banks,Zone A,Obj_687,Slots
+SlotMachine_057,eTGs,Stage,Obj_805,Slots
+SlotMachine_058,Classic,Zone A,Obj_1986,Slots
+SlotMachine_059,Classic,Zone A,Obj_1989,Slots
+SlotMachine_060,Round Banks,Zone A,Obj_690,Slots
+SlotMachine_061,Classic,Zone A,Obj_1990,Slots
+SlotMachine_062,eTGs,Stage,Obj_717,Slots
+SlotMachine_063,Classic,Zone A,Obj_2001,Slots
+SlotMachine_064,Classic,Zone A,Obj_2005,Slots
+SlotMachine_065,Round Banks,Zone A,Obj_692,Slots
+SlotMachine_066,Classic,Zone A,Obj_2006,Slots
+SlotMachine_067,Classic,Zone A,Obj_2009,Slots
+SlotMachine_068,Classic,Zone A,Obj_2010,Slots
+SlotMachine_069,Classic,Zone A,Obj_2021,Slots
+SlotMachine_070,Round Banks,Zone A,Obj_913,Slots
+SlotMachine_071,eTGs,Stage,Obj_719,Slots
+SlotMachine_072,eTGs,Stage,Obj_722,Slots
+SlotMachine_073,Classic,Zone A,Obj_1913,Slots
+SlotMachine_074,Classic,Zone A,Obj_1914,Slots
+SlotMachine_075,Classic,Zone A,Obj_1917,Slots
+SlotMachine_076,Classic,Zone A,Obj_1918,Slots
+SlotMachine_077,Classic,Zone A,Obj_1923,Slots
+SlotMachine_078,Round Banks,Zone A,Obj_915,Slots
+SlotMachine_079,eTGs,Stage,Obj_724,Slots
+SlotMachine_080,eTGs,Stage,Obj_759,Slots
+SlotMachine_081,Classic,Zone A,Obj_1933,Slots
+SlotMachine_082,Round Banks,Zone A,Obj_917,Slots
+SlotMachine_083,eTGs,Stage,Obj_761,Slots
+SlotMachine_084,Round Banks,Zone A,Obj_920,Slots
+SlotMachine_085,Classic,Zone A,Obj_1934,Slots
+SlotMachine_086,Classic,Zone A,Obj_1937,Slots
+SlotMachine_087,Round Banks,Zone A,Obj_923,Slots
+SlotMachine_088,Round Banks,Zone A,Obj_927,Slots
+SlotMachine_089,eTGs,Stage,Obj_763,Slots
+SlotMachine_090,Round Banks,Zone A,Obj_929,Slots
+SlotMachine_091,eTGs,Stage,Obj_766,Slots
+SlotMachine_092,Classic,Zone A,Obj_1938,Slots
+SlotMachine_093,eTGs,Stage,Obj_768,Slots
+SlotMachine_094,Round Banks,Zone A,Obj_933,Slots
+SlotMachine_095,Classic,Zone A,Obj_1943,Slots
+SlotMachine_096,Classic,Zone A,Obj_1953,Slots
+SlotMachine_097,Round Banks,Zone A,Obj_935,Slots
+SlotMachine_098,eTGs,Stage,Obj_794,Slots
+SlotMachine_099,Classic,Zone A,Obj_1954,Slots
+SlotMachine_100,Classic,Zone A,Obj_1957,Slots
+SlotMachine_101,eTGs,Stage,Obj_796,Slots
+SlotMachine_102,Classic,Zone A,Obj_1958,Slots
+SlotMachine_103,eTGs,Stage,Obj_799,Slots
+SlotMachine_104,Classic,Zone A,Obj_1963,Slots
+SlotMachine_105,eTGs,Stage,Obj_715,Slots
+SlotMachine_106,Round Banks,Zone A,Obj_937,Slots
+SlotMachine_107,eTGs,Stage,Obj_704,Slots
+SlotMachine_108,Classic,Zone A,Obj_1973,Slots
+SlotMachine_109,Classic,Zone A,Obj_1974,Slots
+SlotMachine_110,eTGs,Stage,Obj_706,Slots
+SlotMachine_111,eTGs,Stage,Obj_708,Slots
+SlotMachine_112,Round Banks,Zone A,Obj_939,Slots
+SlotMachine_113,Round Banks,Zone A,Obj_997,Slots
+SlotMachine_114,eTGs,Stage,Obj_711,Slots
+SlotMachine_115,eTGs,Stage,Obj_713,Slots
+SlotMachine_116,Round Banks,Zone A,Obj_999,Slots
+SlotMachine_117,Classic,Zone A,Obj_1977,Slots
+SlotMachine_118,Classic,Zone A,Obj_1978,Slots
+SlotMachine_119,Classic,Zone A,Obj_1983,Slots
+SlotMachine_120,Classic,Zone A,Obj_1993,Slots
+SlotMachine_121,eTGs,Stage,Obj_748,Slots
+SlotMachine_122,eTGs,Stage,Obj_750,Slots
+SlotMachine_123,Classic,Zone A,Obj_1994,Slots
+SlotMachine_124,Round Banks,Zone A,Obj_1001,Slots
+SlotMachine_125,Classic,Zone A,Obj_1997,Slots
+SlotMachine_126,eTGs,Stage,Obj_752,Slots
+SlotMachine_127,Classic,Zone A,Obj_1998,Slots
+SlotMachine_128,Classic,Zone A,Obj_2003,Slots
+SlotMachine_129,eTGs,Stage,Obj_755,Slots
+SlotMachine_130,Round Banks,Zone A,Obj_1005,Slots
+SlotMachine_131,Classic,Zone A,Obj_2013,Slots
+SlotMachine_132,eTGs,Stage,Obj_757,Slots
+SlotMachine_133,Classic,Zone A,Obj_2014,Slots
+SlotMachine_134,Classic,Zone A,Obj_2017,Slots
+SlotMachine_135,Classic,Zone D,Obj_1525,Slots
+SlotMachine_136,Classic,Zone A,Obj_2018,Slots
+SlotMachine_137,eTGs,Stage,Obj_788,Slots
+SlotMachine_138,Classic,Zone D,Obj_1526,Slots
+SlotMachine_139,Classic,Zone D,Obj_1529,Slots
+SlotMachine_140,Classic,Zone D,Obj_1530,Slots
+SlotMachine_141,Classic,Zone D,Obj_1533,Slots
+SlotMachine_142,eTGs,Stage,Obj_790,Slots
+SlotMachine_143,eTGs,Stage,Obj_792,Slots
+SlotMachine_144,eTGs,Stage,Obj_693,Slots
+SlotMachine_145,Classic,Zone A,Obj_2023,Slots
+SlotMachine_146,Classic,Zone B,Obj_103,Slots
+SlotMachine_147,eTGs,Stage,Obj_695,Slots
+SlotMachine_148,eTGs,Stage,Obj_697,Slots
+SlotMachine_149,eTGs,Stage,Obj_700,Slots
+SlotMachine_150,eTGs,Stage,Obj_702,Slots
+SlotMachine_151,Classic,Zone B,Obj_302,Slots
+SlotMachine_152,eTGs,Stage,Obj_737,Slots
+SlotMachine_153,eTGs,Stage,Obj_739,Slots
+SlotMachine_154,Classic,Zone D,Obj_1534,Slots
+SlotMachine_155,Classic,Zone D,Obj_1549,Slots
+SlotMachine_156,eTGs,Stage,Obj_741,Slots
+SlotMachine_157,eTGs,Stage,Obj_744,Slots
+SlotMachine_158,Classic,Zone B,Obj_2025,Slots
+SlotMachine_159,Classic,Zone D,Obj_1550,Slots
+SlotMachine_160,eTGs,Stage,Obj_746,Slots
+SlotMachine_161,Classic,Zone D,Obj_1555,Slots
+SlotMachine_162,eTGs,Stage,Obj_781,Slots
+SlotMachine_163,Classic,Zone D,Obj_1556,Slots
+SlotMachine_164,eTGs,Stage,Obj_783,Slots
+SlotMachine_165,Classic,Zone B,Obj_2026,Slots
+SlotMachine_166,Classic,Zone D,Obj_1559,Slots
+SlotMachine_167,eTGs,Stage,Obj_785,Slots
+SlotMachine_168,Classic,Zone D,Obj_1560,Slots
+SlotMachine_169,Classic,Zone B,Obj_2029,Slots
+SlotMachine_170,Classic,Zone B,Obj_2030,Slots
+SlotMachine_171,Classic,Zone B,Obj_2041,Slots
+SlotMachine_172,Classic,Zone B,Obj_2045,Slots
+SlotMachine_173,Classic,Zone B,Obj_2046,Slots
+SlotMachine_174,eTGs,Stage,Obj_807,Slots
+SlotMachine_175,eTGs,Stage,Obj_810,Slots
+SlotMachine_176,Classic,Zone B,Obj_2049,Slots
+SlotMachine_177,Classic,Zone B,Obj_2050,Slots
+SlotMachine_178,Classic,Zone B,Obj_2061,Slots
+SlotMachine_179,eTGs,Stage,Obj_812,Slots
+SlotMachine_180,Classic,Zone B,Obj_2065,Slots
+SlotMachine_181,Classic,Zone B,Obj_2066,Slots
+SlotMachine_182,Classic,Zone D,Obj_1563,Slots
+SlotMachine_183,Classic,Zone D,Obj_1564,Slots
+SlotMachine_184,eTGs,Stage,Obj_814,Slots
+SlotMachine_185,eTGs,Stage,Obj_818,Slots
+SlotMachine_186,Classic,Zone D,Obj_1579,Slots
+SlotMachine_187,Classic,Zone D,Obj_1580,Slots
+SlotMachine_188,Classic,Zone B,Obj_2069,Slots
+SlotMachine_189,Classic,Zone B,Obj_2070,Slots
+SlotMachine_190,Classic,Zone B,Obj_2081,Slots
+SlotMachine_191,eTGs,Stage,Obj_821,Slots
+SlotMachine_192,eTGs,Stadium,Obj_823,Slots
+SlotMachine_193,eTGs,Stadium,Obj_825,Slots
+SlotMachine_194,Classic,Zone B,Obj_2085,Slots
+SlotMachine_195,Classic,Zone D,Obj_1587,Slots
+SlotMachine_196,eTGs,Stadium,Obj_827,Slots
+SlotMachine_197,Classic,Zone B,Obj_2086,Slots
+SlotMachine_198,eTGs,Stadium,Obj_829,Slots
+SlotMachine_199,Classic,Zone B,Obj_2089,Slots
+SlotMachine_200,Classic,Zone D,Obj_1588,Slots
+SlotMachine_201,eTGs,Stadium,Obj_832,Slots
+SlotMachine_202,eTGs,Stadium,Obj_834,Slots
+SlotMachine_203,Classic,Zone B,Obj_2090,Slots
+SlotMachine_204,eTGs,Stadium,Obj_826,Slots
+SlotMachine_205,eTGs,Stadium,Obj_840,Slots
+SlotMachine_206,Classic,Zone B,Obj_107,Slots
+SlotMachine_207,Classic,Zone B,Obj_108,Slots
+SlotMachine_208,Classic,Zone D,Obj_1591,Slots
+SlotMachine_209,Classic,Zone B,Obj_111,Slots
+SlotMachine_210,Classic,Zone B,Obj_112,Slots
+SlotMachine_211,Classic,Zone B,Obj_125,Slots
+SlotMachine_212,Classic,Zone B,Obj_236,Slots
+SlotMachine_213,Classic,Zone B,Obj_241,Slots
+SlotMachine_214,Classic,Zone B,Obj_242,Slots
+SlotMachine_215,Classic,Zone D,Obj_1592,Slots
+SlotMachine_216,eTGs,Stadium,Obj_843,Slots
+SlotMachine_217,Classic,Zone D,Obj_1595,Slots
+SlotMachine_218,eTGs,Stadium,Obj_845,Slots
+SlotMachine_219,Classic,Zone B,Obj_245,Slots
+SlotMachine_220,Classic,Zone B,Obj_246,Slots
+SlotMachine_221,Classic,Zone D,Obj_1596,Slots
+SlotMachine_222,Classic,Zone D,Obj_1611,Slots
+SlotMachine_223,Classic,Zone B,Obj_250,Slots
+SlotMachine_224,Classic,Zone D,Obj_1612,Slots
+SlotMachine_225,Classic,Zone D,Obj_1619,Slots
+SlotMachine_226,Classic,Zone B,Obj_251,Slots
+SlotMachine_227,eTGs,Stadium,Obj_847,Slots
+SlotMachine_228,Classic,Zone B,Obj_267,Slots
+SlotMachine_229,eTGs,Stadium,Obj_849,Slots
+SlotMachine_230,eTGs,Stadium,Obj_851,Slots
+SlotMachine_231,Classic,Zone B,Obj_272,Slots
+SlotMachine_232,Classic,Zone D,Obj_1620,Slots
+SlotMachine_233,Classic,Zone D,Obj_1623,Slots
+SlotMachine_234,Classic,Zone B,Obj_273,Slots
+SlotMachine_235,Classic,Zone D,Obj_1624,Slots
+SlotMachine_236,Classic,Zone D,Obj_1627,Slots
+SlotMachine_237,Classic,Zone D,Obj_1628,Slots
+SlotMachine_238,Classic,Zone D,Obj_1643,Slots
+SlotMachine_239,eTGs,Stadium,Obj_854,Slots
+SlotMachine_240,Classic,Zone D,Obj_1649,Slots
+SlotMachine_241,Classic,Zone B,Obj_276,Slots
+SlotMachine_242,Classic,Zone D,Obj_1650,Slots
+SlotMachine_243,eTGs,Stadium,Obj_856,Slots
+SlotMachine_244,Classic,Zone D,Obj_1653,Slots
+SlotMachine_245,eTGs,Stadium,Obj_858,Slots
+SlotMachine_246,Classic,Zone D,Obj_1654,Slots
+SlotMachine_247,Classic,Zone D,Obj_1665,Slots
+SlotMachine_248,eTGs,Stadium,Obj_860,Slots
+SlotMachine_249,Classic,Zone D,Obj_1666,Slots
+SlotMachine_250,eTGs,Stadium,Obj_862,Slots
+SlotMachine_251,Classic,Zone D,Obj_1537,Slots
+SlotMachine_252,Classic,Zone D,Obj_1538,Slots
+SlotMachine_253,Classic,Zone B,Obj_277,Slots
+SlotMachine_254,eTGs,Stadium,Obj_865,Slots
+SlotMachine_255,eTGs,Stadium,Obj_867,Slots
+SlotMachine_256,eTGs,Stadium,Obj_869,Slots
+SlotMachine_257,Classic,Zone B,Obj_280,Slots
+SlotMachine_258,Classic,Zone D,Obj_1541,Slots
+SlotMachine_259,Classic,Zone D,Obj_1542,Slots
+SlotMachine_260,Classic,Zone D,Obj_1545,Slots
+SlotMachine_261,Classic,Zone D,Obj_1546,Slots
+SlotMachine_262,eTGs,Stadium,Obj_871,Slots
+SlotMachine_263,Classic,Zone D,Obj_1553,Slots
+SlotMachine_264,Classic,Zone B,Obj_282,Slots
+SlotMachine_265,Classic,Zone D,Obj_1567,Slots
+SlotMachine_266,Classic,Zone D,Obj_1568,Slots
+SlotMachine_267,Classic,Zone D,Obj_1571,Slots
+SlotMachine_268,Classic,Zone B,Obj_298,Slots
+SlotMachine_269,eTGs,Stadium,Obj_873,Slots
+SlotMachine_270,Classic,Zone B,Obj_562,Slots
+SlotMachine_271,eTGs,Stadium,Obj_876,Slots
+SlotMachine_272,Classic,Zone D,Obj_1572,Slots
+SlotMachine_273,eTGs,Stadium,Obj_878,Slots
+SlotMachine_274,Classic,Zone B,Obj_563,Slots
+SlotMachine_275,eTGs,Stadium,Obj_880,Slots
+SlotMachine_276,Classic,Zone D,Obj_1575,Slots
+SlotMachine_277,eTGs,Stadium,Obj_882,Slots
+SlotMachine_278,Classic,Zone D,Obj_1576,Slots
+SlotMachine_279,Classic,Zone D,Obj_1583,Slots
+SlotMachine_280,eTGs,Stadium,Obj_884,Slots
+SlotMachine_281,eTGs,Stadium,Obj_887,Slots
+SlotMachine_282,Classic,Zone D,Obj_1585,Slots
+SlotMachine_283,eTGs,Stadium,Obj_1017,Slots
+SlotMachine_284,Classic,Zone B,Obj_566,Slots
+SlotMachine_285,Classic,Zone B,Obj_568,Slots
+SlotMachine_286,Classic,Zone B,Obj_571,Slots
+SlotMachine_287,eTGs,Stadium,Obj_1020,Slots
+SlotMachine_288,Classic,Zone D,Obj_1599,Slots
+SlotMachine_289,eTGs,Stadium,Obj_1022,Slots
+SlotMachine_290,Classic,Zone D,Obj_1600,Slots
+SlotMachine_291,Classic,Zone B,Obj_572,Slots
+SlotMachine_292,Classic,Zone B,Obj_588,Slots
+SlotMachine_293,Classic,Zone D,Obj_1603,Slots
+SlotMachine_294,eTGs,Stadium,Obj_1024,Slots
+SlotMachine_295,Classic,Zone B,Obj_624,Slots
+SlotMachine_296,eTGs,Stadium,Obj_1026,Slots
+SlotMachine_297,eTGs,Stadium,Obj_1028,Slots
+SlotMachine_298,Classic,Zone D,Obj_1604,Slots
+SlotMachine_299,Classic,Zone D,Obj_1607,Slots
+SlotMachine_300,Classic,Zone B,Obj_625,Slots
+SlotMachine_301,Classic,Zone B,Obj_628,Slots
+SlotMachine_302,eTGs,Stadium,Obj_1031,Slots
+SlotMachine_303,Classic,Zone D,Obj_1608,Slots
+SlotMachine_304,Classic,Zone B,Obj_629,Slots
+SlotMachine_305,eTGs,Stadium,Obj_1033,Slots
+SlotMachine_306,Classic,Zone D,Obj_1615,Slots
+SlotMachine_307,eTGs,Stadium,Obj_1035,Slots
+SlotMachine_308,eTGs,Stadium,Obj_1037,Slots
+SlotMachine_309,Classic,Zone D,Obj_1617,Slots
+SlotMachine_310,Classic,Zone D,Obj_1631,Slots
+SlotMachine_311,Classic,Zone B,Obj_632,Slots
+SlotMachine_312,Classic,Zone D,Obj_1632,Slots
+SlotMachine_313,Classic,Zone B,Obj_634,Slots
+SlotMachine_314,eTGs,Stadium,Obj_1039,Slots
+SlotMachine_315,eTGs,Stadium,Obj_1042,Slots
+SlotMachine_316,eTGs,Stadium,Obj_1044,Slots
+SlotMachine_317,Classic,Zone B,Obj_637,Slots
+SlotMachine_318,Classic,Zone D,Obj_1635,Slots
+SlotMachine_319,Classic,Zone D,Obj_1636,Slots
+SlotMachine_320,eTGs,Stadium,Obj_1046,Slots
+SlotMachine_321,Classic,Zone B,Obj_638,Slots
+SlotMachine_322,Classic,Zone D,Obj_1639,Slots
+SlotMachine_323,Classic,Zone B,Obj_641,Slots
+SlotMachine_324,Classic,Zone D,Obj_1640,Slots
+SlotMachine_325,Classic,Zone D,Obj_1645,Slots
+SlotMachine_326,Classic,Zone D,Obj_1647,Slots
+SlotMachine_327,Classic,Zone B,Obj_593,Slots
+SlotMachine_328,Classic,Zone D,Obj_1657,Slots
+SlotMachine_329,Classic,Zone D,Obj_1658,Slots
+SlotMachine_330,Classic,Zone B,Obj_594,Slots
+SlotMachine_331,Classic,Zone D,Obj_1661,Slots
+SlotMachine_332,Classic,Zone B,Obj_597,Slots
+SlotMachine_333,Classic,Zone B,Obj_598,Slots
+SlotMachine_334,Classic,Zone B,Obj_602,Slots
+SlotMachine_335,Classic,Zone D,Obj_1662,Slots
+SlotMachine_336,Classic,Zone D,Obj_1669,Slots
+SlotMachine_337,Classic,Zone D,Obj_1671,Slots
+SlotMachine_338,Round Banks,Zone D,Obj_962,Slots
+SlotMachine_339,Round Banks,Zone D,Obj_965,Slots
+SlotMachine_340,Classic,Zone B,Obj_603,Slots
+SlotMachine_341,Classic,Zone B,Obj_606,Slots
+SlotMachine_342,Classic,Zone B,Obj_608,Slots
+SlotMachine_343,Classic,Zone B,Obj_609,Slots
+SlotMachine_344,Round Banks,Zone D,Obj_967,Slots
+SlotMachine_345,Classic,Zone B,Obj_613,Slots
+SlotMachine_346,Classic,Zone B,Obj_614,Slots
+SlotMachine_347,Classic,Zone B,Obj_617,Slots
+SlotMachine_348,Round Banks,Zone D,Obj_969,Slots
+SlotMachine_349,Classic,Zone E,Obj_1049,Slots
+SlotMachine_350,Classic,Zone E,Obj_1050,Slots
+SlotMachine_351,Classic,Zone B,Obj_618,Slots
+SlotMachine_352,Classic,Zone E,Obj_1054,Slots
+SlotMachine_353,Classic,Zone E,Obj_1055,Slots
+SlotMachine_354,Classic,Zone B,Obj_621,Slots
+SlotMachine_355,Classic,Zone E,Obj_1058,Slots
+SlotMachine_356,Classic,Zone E,Obj_1059,Slots
+SlotMachine_357,Classic,Zone B,Obj_643,Slots
+SlotMachine_358,Classic,Zone E,Obj_1063,Slots
+SlotMachine_359,Classic,Zone E,Obj_1064,Slots
+SlotMachine_360,Classic,Zone E,Obj_1067,Slots
+SlotMachine_361,Classic,Zone B,Obj_645,Slots
+SlotMachine_362,Classic,Zone B,Obj_648,Slots
+SlotMachine_363,Classic,Zone C,Obj_412,Slots
+SlotMachine_364,Classic,Zone E,Obj_1068,Slots
+SlotMachine_365,Classic,Zone C,Obj_414,Slots
+SlotMachine_366,Classic,Zone E,Obj_1071,Slots
+SlotMachine_367,Classic,Zone E,Obj_1072,Slots
+SlotMachine_368,Classic,Zone E,Obj_1075,Slots
+SlotMachine_369,Classic,Zone C,Obj_417,Slots
+SlotMachine_370,Classic,Zone C,Obj_418,Slots
+SlotMachine_371,Classic,Zone E,Obj_1078,Slots
+SlotMachine_372,Classic,Zone C,Obj_430,Slots
+SlotMachine_373,Classic,Zone C,Obj_434,Slots
+SlotMachine_374,Classic,Zone C,Obj_436,Slots
+SlotMachine_375,Classic,Zone C,Obj_439,Slots
+SlotMachine_376,Classic,Zone E,Obj_1079,Slots
+SlotMachine_377,Classic,Zone C,Obj_440,Slots
+SlotMachine_378,Classic,Zone E,Obj_1403,Slots
+SlotMachine_379,Classic,Zone E,Obj_1414,Slots
+SlotMachine_380,Classic,Zone C,Obj_452,Slots
+SlotMachine_381,Classic,Zone E,Obj_1421,Slots
+SlotMachine_382,Classic,Zone C,Obj_456,Slots
+SlotMachine_383,Classic,Zone E,Obj_1422,Slots
+SlotMachine_384,Classic,Zone C,Obj_458,Slots
+SlotMachine_385,Classic,Zone E,Obj_1425,Slots
+SlotMachine_386,Classic,Zone E,Obj_1426,Slots
+SlotMachine_387,Classic,Zone C,Obj_461,Slots
+SlotMachine_388,Classic,Zone E,Obj_1434,Slots
+SlotMachine_389,Classic,Zone E,Obj_1437,Slots
+SlotMachine_390,Classic,Zone C,Obj_462,Slots
+SlotMachine_391,Classic,Zone C,Obj_474,Slots
+SlotMachine_392,Classic,Zone E,Obj_1438,Slots
+SlotMachine_393,Classic,Zone E,Obj_1465,Slots
+SlotMachine_394,Classic,Zone E,Obj_1466,Slots
+SlotMachine_395,Classic,Zone E,Obj_1469,Slots
+SlotMachine_396,Classic,Zone E,Obj_1470,Slots
+SlotMachine_397,Classic,Zone E,Obj_1473,Slots
+SlotMachine_398,Classic,Zone E,Obj_1474,Slots
+SlotMachine_399,Classic,Zone E,Obj_1489,Slots
+SlotMachine_400,Classic,Zone E,Obj_1490,Slots
+SlotMachine_401,Classic,Zone E,Obj_1493,Slots
+SlotMachine_402,Classic,Zone E,Obj_1494,Slots
+SlotMachine_403,Classic,Zone C,Obj_475,Slots
+SlotMachine_404,Classic,Zone E,Obj_1497,Slots
+SlotMachine_405,Classic,Zone E,Obj_1498,Slots
+SlotMachine_406,Classic,Zone C,Obj_478,Slots
+SlotMachine_407,Classic,Zone C,Obj_480,Slots
+SlotMachine_408,Classic,Zone E,Obj_1513,Slots
+SlotMachine_409,Classic,Zone C,Obj_492,Slots
+SlotMachine_410,Classic,Zone C,Obj_496,Slots
+SlotMachine_411,Classic,Zone E,Obj_1514,Slots
+SlotMachine_412,Classic,Zone E,Obj_1517,Slots
+SlotMachine_413,Classic,Zone C,Obj_497,Slots
+SlotMachine_414,Classic,Zone E,Obj_1518,Slots
+SlotMachine_415,Classic,Zone E,Obj_1521,Slots
+SlotMachine_416,Classic,Zone E,Obj_1522,Slots
+SlotMachine_417,Classic,Zone E,Obj_1271,Slots
+SlotMachine_418,Classic,Zone E,Obj_1282,Slots
+SlotMachine_419,Classic,Zone E,Obj_1315,Slots
+SlotMachine_420,Classic,Zone C,Obj_500,Slots
+SlotMachine_421,Classic,Zone C,Obj_509,Slots
+SlotMachine_422,Classic,Zone C,Obj_510,Slots
+SlotMachine_423,Classic,Zone C,Obj_514,Slots
+SlotMachine_424,Classic,Zone C,Obj_522,Slots
+SlotMachine_425,Classic,Zone E,Obj_1329,Slots
+SlotMachine_426,Classic,Zone E,Obj_1359,Slots
+SlotMachine_427,Classic,Zone E,Obj_1370,Slots
+SlotMachine_428,Classic,Zone E,Obj_1428,Slots
+SlotMachine_429,Classic,Zone E,Obj_1431,Slots
+SlotMachine_430,Classic,Zone E,Obj_1432,Slots
+SlotMachine_431,Classic,Zone C,Obj_524,Slots
+SlotMachine_432,Classic,Zone C,Obj_527,Slots
+SlotMachine_433,Classic,Zone C,Obj_536,Slots
+SlotMachine_434,Classic,Zone C,Obj_537,Slots
+SlotMachine_435,Classic,Zone E,Obj_1453,Slots
+SlotMachine_436,Classic,Zone C,Obj_540,Slots
+SlotMachine_437,Classic,Zone C,Obj_549,Slots
+SlotMachine_438,Classic,Zone E,Obj_1454,Slots
+SlotMachine_439,Classic,Zone C,Obj_550,Slots
+SlotMachine_440,Classic,Zone E,Obj_1457,Slots
+SlotMachine_441,Classic,Zone E,Obj_1458,Slots
+SlotMachine_442,Classic,Zone E,Obj_1461,Slots
+SlotMachine_443,Classic,Zone C,Obj_553,Slots
+SlotMachine_444,Classic,Zone C,Obj_650,Slots
+SlotMachine_445,Classic,Zone E,Obj_1462,Slots
+SlotMachine_446,Classic,Zone C,Obj_651,Slots
+SlotMachine_447,Classic,Zone C,Obj_654,Slots
+SlotMachine_448,Classic,Zone C,Obj_656,Slots
+SlotMachine_449,Classic,Zone C,Obj_659,Slots
+SlotMachine_450,Classic,Zone C,Obj_660,Slots
+SlotMachine_451,Classic,Zone C,Obj_663,Slots
+SlotMachine_452,Classic,Zone C,Obj_664,Slots
+SlotMachine_453,Classic,Zone E,Obj_1477,Slots
+SlotMachine_454,Classic,Zone C,Obj_668,Slots
+SlotMachine_455,Classic,Zone E,Obj_1478,Slots
+SlotMachine_456,Classic,Zone C,Obj_669,Slots
+SlotMachine_457,Classic,Zone C,Obj_672,Slots
+SlotMachine_458,Classic,Zone C,Obj_421,Slots
+SlotMachine_459,Classic,Zone C,Obj_422,Slots
+SlotMachine_460,Classic,Zone C,Obj_426,Slots
+SlotMachine_461,Classic,Zone E,Obj_1481,Slots
+SlotMachine_462,Classic,Zone E,Obj_1482,Slots
+SlotMachine_463,Classic,Zone E,Obj_1485,Slots
+SlotMachine_464,Classic,Zone C,Obj_427,Slots
+SlotMachine_465,Classic,Zone E,Obj_1486,Slots
+SlotMachine_466,Classic,Zone C,Obj_432,Slots
+SlotMachine_467,Classic,Zone E,Obj_1501,Slots
+SlotMachine_468,Classic,Zone C,Obj_443,Slots
+SlotMachine_469,Classic,Zone E,Obj_1502,Slots
+SlotMachine_470,Classic,Zone C,Obj_444,Slots
+SlotMachine_471,Classic,Zone C,Obj_448,Slots
+SlotMachine_472,Classic,Zone C,Obj_449,Slots
+SlotMachine_473,Classic,Zone C,Obj_454,Slots
+SlotMachine_474,Classic,Zone E,Obj_1505,Slots
+SlotMachine_475,Classic,Zone E,Obj_1506,Slots
+SlotMachine_476,Classic,Zone E,Obj_1509,Slots
+SlotMachine_477,Classic,Zone E,Obj_1510,Slots
+SlotMachine_478,Classic,Zone E,Obj_1082,Slots
+SlotMachine_479,Classic,Zone C,Obj_465,Slots
+SlotMachine_480,Classic,Zone E,Obj_1083,Slots
+SlotMachine_481,Classic,Zone C,Obj_466,Slots
+SlotMachine_482,Classic,Zone C,Obj_470,Slots
+SlotMachine_483,Classic,Zone E,Obj_1087,Slots
+SlotMachine_484,Classic,Zone C,Obj_471,Slots
+SlotMachine_485,Classic,Zone E,Obj_1088,Slots
+SlotMachine_486,Classic,Zone E,Obj_1091,Slots
+SlotMachine_487,Classic,Zone E,Obj_1092,Slots
+SlotMachine_488,Classic,Zone E,Obj_1096,Slots
+SlotMachine_489,Classic,Zone E,Obj_1097,Slots
+SlotMachine_490,Classic,Zone C,Obj_483,Slots
+SlotMachine_491,Classic,Zone E,Obj_1100,Slots
+SlotMachine_492,Classic,Zone E,Obj_1101,Slots
+SlotMachine_493,Classic,Zone E,Obj_1104,Slots
+SlotMachine_494,Classic,Zone C,Obj_484,Slots
+SlotMachine_495,Classic,Zone E,Obj_1105,Slots
+SlotMachine_496,Classic,Zone E,Obj_1108,Slots
+SlotMachine_497,Classic,Zone C,Obj_487,Slots
+SlotMachine_498,Classic,Zone E,Obj_1111,Slots
+SlotMachine_499,Classic,Zone C,Obj_488,Slots
+SlotMachine_500,Classic,Zone C,Obj_679,Slots
+SlotMachine_501,Classic,Zone C,Obj_494,Slots
+SlotMachine_502,Classic,Zone C,Obj_503,Slots
+SlotMachine_503,Classic,Zone C,Obj_504,Slots
+SlotMachine_504,Classic,Zone C,Obj_507,Slots
+SlotMachine_505,Classic,Zone C,Obj_516,Slots
+SlotMachine_506,Classic,Zone C,Obj_406,Slots
+SlotMachine_507,Classic,Zone C,Obj_407,Slots
+SlotMachine_508,Classic,Zone C,Obj_410,Slots
+SlotMachine_509,Classic,Zone C,Obj_517,Slots
+SlotMachine_510,Classic,Zone C,Obj_520,Slots
+SlotMachine_511,Classic,Zone C,Obj_674,Slots
+SlotMachine_512,Classic,Zone C,Obj_675,Slots
+SlotMachine_513,Classic,Zone C,Obj_529,Slots
+SlotMachine_514,Classic,Zone C,Obj_530,Slots
+SlotMachine_515,Classic,Zone C,Obj_533,Slots
+SlotMachine_516,Classic,Zone C,Obj_399,Slots
+SlotMachine_517,Classic,Zone C,Obj_542,Slots
+SlotMachine_518,Classic,Zone C,Obj_543,Slots
+SlotMachine_519,Classic,Zone C,Obj_547,Slots
+SlotMachine_520,Classic,Zone C,Obj_386,Slots
+SlotMachine_521,Classic,Zone C,Obj_393,Slots
+SlotMachine_522,Classic,Zone C,Obj_555,Slots
+SlotMachine_523,Classic,Zone C,Obj_394,Slots
+SlotMachine_524,Classic,Zone C,Obj_557,Slots
+SlotMachine_525,Classic,Zone C,Obj_560,Slots
+SlotMachine_526,Classic,Zone C,Obj_307,Slots
+SlotMachine_527,Classic,Zone C,Obj_379,Slots
+SlotMachine_528,Classic,Zone C,Obj_381,Slots
+SlotMachine_529,Classic,Zone C,Obj_308,Slots
+SlotMachine_530,Classic,Zone C,Obj_360,Slots
+SlotMachine_531,Classic,Zone C,Obj_366,Slots
+SlotMachine_532,Classic,Zone C,Obj_367,Slots
+SlotMachine_533,Classic,Zone C,Obj_311,Slots
+SlotMachine_534,Classic,Zone C,Obj_312,Slots
+SlotMachine_535,Classic,Zone C,Obj_316,Slots
+SlotMachine_536,Classic,Zone C,Obj_317,Slots
+SlotMachine_537,Classic,Zone C,Obj_373,Slots
+SlotMachine_538,Classic,Zone C,Obj_320,Slots
+SlotMachine_539,Classic,Zone C,Obj_321,Slots
+SlotMachine_540,Classic,Zone C,Obj_324,Slots
+SlotMachine_541,Classic,Zone C,Obj_327,Slots
+SlotMachine_542,Classic,Zone C,Obj_328,Slots
+SlotMachine_543,Classic,Zone C,Obj_335,Slots
+SlotMachine_544,Classic,Zone C,Obj_340,Slots
+SlotMachine_545,Classic,Zone C,Obj_341,Slots
+SlotMachine_546,Classic,Zone C,Obj_349,Slots
+SlotMachine_547,Classic,Zone C,Obj_352,Slots
+SlotMachine_548,Classic,Zone C,Obj_357,Slots
+SlotMachine_549,Classic,Zone C,Obj_362,Slots
+SlotMachine_550,Classic,Zone C,Obj_363,Slots
+SlotMachine_551,Classic,Zone C,Obj_371,Slots
+SlotMachine_552,Classic,Zone C,Obj_375,Slots
+SlotMachine_553,Classic,Zone C,Obj_376,Slots
+SlotMachine_554,Classic,Zone C,Obj_384,Slots
+SlotMachine_555,Classic,Zone C,Obj_388,Slots
+SlotMachine_556,Classic,Zone C,Obj_389,Slots
+SlotMachine_557,Classic,Zone C,Obj_397,Slots
+SlotMachine_558,Classic,Zone C,Obj_401,Slots
+SlotMachine_559,Classic,Zone C,Obj_403,Slots
+SlotMachine_560,Classic,Zone C,Obj_331,Slots
+SlotMachine_561,Classic,Zone C,Obj_332,Slots
+SlotMachine_562,Classic,Zone C,Obj_338,Slots
+SlotMachine_563,Classic,Zone C,Obj_344,Slots
+SlotMachine_564,Classic,Zone C,Obj_345,Slots
+SlotMachine_565,Classic,Zone C,Obj_351,Slots
+SlotMachine_566,Classic,Zone C,Obj_354,Slots
+SlotMachine_567,Classic,Zone E,Obj_1112,Slots
+SlotMachine_568,Classic,Zone E,Obj_1115,Slots
+SlotMachine_569,Classic,Zone E,Obj_1116,Slots
+SlotMachine_570,Classic,Zone E,Obj_1120,Slots
+SlotMachine_571,Classic,Zone E,Obj_1121,Slots
+SlotMachine_572,Classic,Zone E,Obj_1124,Slots
+SlotMachine_573,Classic,Zone E,Obj_1125,Slots
+SlotMachine_574,Classic,Zone E,Obj_1129,Slots
+SlotMachine_575,Classic,Zone E,Obj_1130,Slots
+SlotMachine_576,Classic,Zone E,Obj_1441,Slots
+SlotMachine_577,Classic,Zone E,Obj_1442,Slots
+SlotMachine_578,Classic,Zone E,Obj_1445,Slots
+SlotMachine_579,Classic,Zone E,Obj_1447,Slots
+SlotMachine_580,Classic,Zone E,Obj_1448,Slots
+SlotMachine_581,Classic,Zone E,Obj_1451,Slots
+SlotMachine_582,Round Banks,Zone E,Obj_943,Slots
+SlotMachine_583,Round Banks,Zone E,Obj_945,Slots
+SlotMachine_584,Round Banks,Zone E,Obj_947,Slots
+SlotMachine_585,Round Banks,Zone E,Obj_949,Slots
+SlotMachine_586,Round Banks,Zone E,Obj_953,Slots
+SlotMachine_587,Round Banks,Zone E,Obj_955,Slots
+SlotMachine_588,Round Banks,Zone E,Obj_957,Slots
+SlotMachine_589,Round Banks,Zone E,Obj_959,Slots
+SlotMachine_590,Classic,Zone F,Obj_1679,Slots
+SlotMachine_591,Classic,Zone F,Obj_1680,Slots
+SlotMachine_592,Classic,Zone F,Obj_1683,Slots
+SlotMachine_593,Classic,Zone F,Obj_1689,Slots
+SlotMachine_594,Classic,Zone F,Obj_1690,Slots
+SlotMachine_595,Classic,Zone F,Obj_1697,Slots
+SlotMachine_596,Classic,Zone F,Obj_1699,Slots
+SlotMachine_597,Classic,Zone F,Obj_1705,Slots
+SlotMachine_598,Classic,Zone F,Obj_1706,Slots
+SlotMachine_599,Classic,Zone F,Obj_1713,Slots
+SlotMachine_600,Classic,Zone F,Obj_1715,Slots
+SlotMachine_601,Classic,Zone F,Obj_1718,Slots
+SlotMachine_602,Classic,Zone F,Obj_1725,Slots
+SlotMachine_603,Classic,Zone F,Obj_1727,Slots
+SlotMachine_604,Classic,Zone F,Obj_1733,Slots
+SlotMachine_605,Classic,Zone F,Obj_1734,Slots
+SlotMachine_606,Classic,Zone F,Obj_1741,Slots
+SlotMachine_607,Classic,Zone F,Obj_1743,Slots
+SlotMachine_608,Classic,Zone F,Obj_1757,Slots
+SlotMachine_609,Classic,Zone F,Obj_1758,Slots
+SlotMachine_610,Classic,Zone F,Obj_1761,Slots
+SlotMachine_611,Classic,Zone F,Obj_1762,Slots
+SlotMachine_612,Classic,Zone F,Obj_1765,Slots
+SlotMachine_613,Classic,Zone F,Obj_1766,Slots
+SlotMachine_614,Classic,Zone F,Obj_1773,Slots
+SlotMachine_615,Classic,Zone F,Obj_1775,Slots
+SlotMachine_616,Classic,Zone F,Obj_1781,Slots
+SlotMachine_617,Classic,Zone F,Obj_1782,Slots
+SlotMachine_618,Classic,Zone F,Obj_1797,Slots
+SlotMachine_619,Classic,Zone F,Obj_1798,Slots
+SlotMachine_620,Classic,Zone F,Obj_1801,Slots
+SlotMachine_621,Classic,Zone F,Obj_1802,Slots
+SlotMachine_622,Classic,Zone F,Obj_1805,Slots
+SlotMachine_623,Classic,Zone F,Obj_1806,Slots
+SlotMachine_624,Classic,Zone F,Obj_1813,Slots
+SlotMachine_625,Classic,Zone F,Obj_1815,Slots
+SlotMachine_626,Classic,Zone F,Obj_1821,Slots
+SlotMachine_627,Classic,Zone F,Obj_1822,Slots
+SlotMachine_628,Classic,Zone F,Obj_1827,Slots
+SlotMachine_629,Classic,Zone F,Obj_1837,Slots
+SlotMachine_630,Classic,Zone F,Obj_1838,Slots
+SlotMachine_631,Classic,Zone F,Obj_1841,Slots
+SlotMachine_632,Classic,Zone F,Obj_1842,Slots
+SlotMachine_633,Classic,Zone F,Obj_1849,Slots
+SlotMachine_634,Classic,Zone F,Obj_1851,Slots
+SlotMachine_635,Classic,Zone F,Obj_1870,Slots
+SlotMachine_636,Classic,Zone F,Obj_1873,Slots
+SlotMachine_637,Classic,Zone F,Obj_1874,Slots
+SlotMachine_638,Classic,Zone F,Obj_1877,Slots
+SlotMachine_639,Classic,Zone F,Obj_1878,Slots
+SlotMachine_640,Classic,Zone F,Obj_1881,Slots
+SlotMachine_641,Classic,Zone F,Obj_1882,Slots
+SlotMachine_642,Classic,Zone F,Obj_1673,Slots
+SlotMachine_643,Classic,Zone F,Obj_1674,Slots
+SlotMachine_644,Classic,Zone F,Obj_1677,Slots
+SlotMachine_645,Classic,Zone F,Obj_1685,Slots
+SlotMachine_646,Classic,Zone F,Obj_1686,Slots
+SlotMachine_647,Classic,Zone F,Obj_1693,Slots
+SlotMachine_648,Classic,Zone F,Obj_1694,Slots
+SlotMachine_649,Classic,Zone F,Obj_1701,Slots
+SlotMachine_650,Classic,Zone F,Obj_1702,Slots
+SlotMachine_651,Classic,Zone F,Obj_1709,Slots
+SlotMachine_652,Classic,Zone F,Obj_1710,Slots
+SlotMachine_653,Classic,Zone F,Obj_1716,Slots
+SlotMachine_654,Classic,Zone F,Obj_1721,Slots
+SlotMachine_655,Classic,Zone F,Obj_1722,Slots
+SlotMachine_656,Classic,Zone F,Obj_1729,Slots
+SlotMachine_657,Classic,Zone F,Obj_1730,Slots
+SlotMachine_658,Classic,Zone F,Obj_1737,Slots
+SlotMachine_659,Classic,Zone F,Obj_1738,Slots
+SlotMachine_660,Classic,Zone F,Obj_1745,Slots
+SlotMachine_661,Classic,Zone F,Obj_1746,Slots
+SlotMachine_662,Classic,Zone F,Obj_1749,Slots
+SlotMachine_663,Classic,Zone F,Obj_1750,Slots
+SlotMachine_664,Classic,Zone F,Obj_1753,Slots
+SlotMachine_665,Classic,Zone F,Obj_1754,Slots
+SlotMachine_666,Classic,Zone F,Obj_1769,Slots
+SlotMachine_667,Classic,Zone F,Obj_1770,Slots
+SlotMachine_668,Classic,Zone F,Obj_1777,Slots
+SlotMachine_669,Classic,Zone F,Obj_1778,Slots
+SlotMachine_670,Classic,Zone F,Obj_1785,Slots
+SlotMachine_671,Classic,Zone F,Obj_1786,Slots
+SlotMachine_672,Classic,Zone F,Obj_1789,Slots
+SlotMachine_673,Classic,Zone F,Obj_1790,Slots
+SlotMachine_674,Classic,Zone F,Obj_1793,Slots
+SlotMachine_675,Classic,Zone F,Obj_1794,Slots
+SlotMachine_676,Classic,Zone F,Obj_1809,Slots
+SlotMachine_677,Classic,Zone F,Obj_1810,Slots
+SlotMachine_678,Classic,Zone F,Obj_1817,Slots
+SlotMachine_679,Classic,Zone F,Obj_1818,Slots
+SlotMachine_680,Classic,Zone F,Obj_1825,Slots
+SlotMachine_681,Classic,Zone F,Obj_1829,Slots
+SlotMachine_682,Classic,Zone F,Obj_1830,Slots
+SlotMachine_683,Classic,Zone F,Obj_1833,Slots
+SlotMachine_684,Classic,Zone F,Obj_1834,Slots
+SlotMachine_685,Classic,Zone F,Obj_1845,Slots
+SlotMachine_686,Classic,Zone F,Obj_1846,Slots
+SlotMachine_687,Classic,Zone F,Obj_1853,Slots
+SlotMachine_688,Classic,Zone F,Obj_1854,Slots
+SlotMachine_689,Classic,Zone F,Obj_1857,Slots
+SlotMachine_690,Classic,Zone F,Obj_1858,Slots
+SlotMachine_691,Classic,Zone F,Obj_1861,Slots
+SlotMachine_692,Classic,Zone F,Obj_1862,Slots
+SlotMachine_693,Classic,Zone F,Obj_1865,Slots
+SlotMachine_694,Classic,Zone F,Obj_1866,Slots
+SlotMachine_695,Classic,Zone F,Obj_1868,Slots
+SlotMachine_696,Classic,Zone F,Obj_1885,Slots
+SlotMachine_697,Classic,Zone F,Obj_1886,Slots
+SlotMachine_698,Classic,Zone F,Obj_1888,Slots
+SlotMachine_699,Classic,Zone F,Obj_1891,Slots
+SlotMachine_700,Classic,Zone F,Obj_1892,Slots
+SlotMachine_701,Classic,Zone F,Obj_1895,Slots
+SlotMachine_702,Classic,Zone F,Obj_1896,Slots
+SlotMachine_703,Classic,Zone F,Obj_1899,Slots
+SlotMachine_704,Classic,Zone F,Obj_1901,Slots
+SlotMachine_705,Classic,Zone F,Obj_1902,Slots
+SlotMachine_706,Round Banks,Zone F,Obj_1009,Slots
+SlotMachine_707,Round Banks,Zone F,Obj_1011,Slots
+SlotMachine_708,Round Banks,Zone F,Obj_1013,Slots
+SlotMachine_709,Round Banks,Zone F,Obj_1015,Slots
+Table_000,Tables,Pit 8,Obj_336,Baccarat
+Table_001,Tables,Pit 8,Obj_347,Baccarat
+Table_002,Tables,Pit 8,Obj_358,Baccarat
+Table_003,Tables,Pit 8,Obj_369,Baccarat
+Table_004,Tables,Pit 8,Obj_380,Baccarat
+Table_005,Tables,Pit 8,Obj_391,Baccarat
+Table_006,Tables,Pit 8,Obj_402,Baccarat
+Table_007,Tables,Pit 8,Obj_413,Baccarat
+Table_008,Tables,Pit 8,Obj_424,Baccarat
+Table_009,Tables,Pit 8,Obj_435,Baccarat
+Table_010,Tables,Pit 8,Obj_446,Baccarat
+Table_011,Tables,Pit 8,Obj_457,Baccarat
+Table_012,Tables,Pit 8,Obj_501,Blackjack
+Table_013,Tables,Pit 8,Obj_512,Blackjack
+Table_014,Tables,Pit 8,Obj_523,Blackjack
+Table_015,Tables,Pit 8,Obj_534,Blackjack
+Table_016,Tables,Pit 8,Obj_545,Blackjack
+Table_017,Tables,Pit 8,Obj_556,Blackjack
+Table_018,Tables,Pit 3,Obj_732,Roulette
+Table_019,Tables,Pit 3,Obj_743,Roulette
+Table_020,Tables,Pit 3,Obj_754,Roulette
+Table_021,Tables,Pit 3,Obj_765,Roulette
+Table_022,Tables,Pit 3,Obj_776,Roulette
+Table_023,Tables,Pit 3,Obj_787,Roulette
+Table_024,Tables,Pit 3,Obj_798,Roulette
+Table_025,Tables,Pit 3,Obj_809,Roulette
+Table_026,Tables,Pit 3,Obj_820,Roulette
+Table_027,Tables,Pit 3,Obj_831,Roulette
+Table_028,Tables,Pit 3,Obj_633,Blackjack
+Table_029,Tables,Pit 3,Obj_644,Blackjack
+Table_030,Tables,Pit 3,Obj_655,Blackjack
+Table_031,Tables,Pit 3,Obj_666,Blackjack
+Table_032,Tables,Pit 3,Obj_721,Blackjack
+Table_033,Tables,Pit 3 Central,Obj_677,Blackjack
+Table_034,Tables,Pit 3 Central,Obj_688,Blackjack
+Table_035,Tables,Pit 3 Central,Obj_699,Blackjack
+Table_036,Tables,Pit 3 Central,Obj_710,Blackjack
+Table_037,Tables,Pit 3 Central,Obj_930,Blackjack
+Table_038,Tables,Pit 3 Central,Obj_941,Blackjack
+Table_039,Tables,Pit 3 Central,Obj_952,Blackjack
+Table_040,Tables,Pit 3 Central,Obj_963,Blackjack
+Table_041,Tables,Pit 3 Central,Obj_974,Blackjack
+Table_042,Tables,Pit 3 Central,Obj_985,Blackjack
+Table_043,Tables,Pit 3 Central,Obj_996,Blackjack
+Table_044,Tables,Pit 3 Central,Obj_1007,Blackjack
+Table_045,Tables,Pit 3 Central,Obj_1018,Blackjack
+Table_046,Tables,Pit 3 Central,Obj_1029,Blackjack
+Table_047,Tables,Pit 3 Central,Obj_842,Roulette
+Table_048,Tables,Pit 3 Central,Obj_853,Roulette
+Table_049,Tables,Pit 3 Central,Obj_864,Roulette
+Table_050,Tables,Pit 3 Central,Obj_875,Roulette
+Table_051,Tables,Pit 3 Central,Obj_886,Roulette
+Table_052,Tables,Pit 3 Central,Obj_897,Roulette
+Table_053,Tables,Pit 3 Central,Obj_908,Roulette
+Table_054,Tables,Pit 3 Central,Obj_919,Roulette
+Table_055,Tables,Pit 4,Obj_1095,Roulette
+Table_056,Tables,Pit 4,Obj_1106,Roulette
+Table_057,Tables,Pit 4,Obj_1117,Roulette
+Table_058,Tables,Pit 4,Obj_1128,Roulette
+Table_059,Tables,Pit 4,Obj_1139,Roulette
+Table_060,Tables,Pit 4,Obj_1150,Roulette
+Table_061,Tables,Pit 4,Obj_1183,Roulette
+Table_062,Tables,Pit 4,Obj_1194,Roulette
+Table_063,Tables,Pit 4,Obj_1205,Roulette
+Table_064,Tables,Pit 4,Obj_1216,Roulette
+Table_065,Tables,Pit 4,Obj_1227,Roulette
+Table_066,Tables,Pit 4,Obj_1238,Roulette
+Table_067,Tables,Pit 4,Obj_1040,Blackjack
+Table_068,Tables,Pit 4,Obj_1051,Blackjack
+Table_069,Tables,Pit 4,Obj_1062,Blackjack
+Table_070,Tables,Pit 4,Obj_1073,Blackjack
+Table_071,Tables,Pit 4,Obj_1084,Blackjack
+Table_072,Tables,Pit 4,Obj_1161,Blackjack
+Table_073,Tables,Pit 4,Obj_1172,Blackjack
