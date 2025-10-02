@@ -18,15 +18,18 @@ const CasinoModel = ({
   heatMapEnabled = false,
   tableColor,
   etgColor,
-  specialObjectsColor
+  specialObjectsColor,
+  onMachineHover,
+  onMachineClick
 }) => {
   const gltf = useLoader(GLTFLoader, './models/casino_floor_map.glb')
   const groupRef = useRef()
-  const { camera } = useThree()
+  const { camera, gl, raycaster, mouse } = useThree()
   const [cubeObjects, setCubeObjects] = useState([])
   const [allMeshes, setAllMeshes] = useState([])
   const [objectMeshMap, setObjectMeshMap] = useState(new Map())
   const [originalMaterials, setOriginalMaterials] = useState(new Map())
+  const [hoveredMesh, setHoveredMesh] = useState(null)
 
   // Cache casino data lookup for performance
   const casinoDataMap = useMemo(() => {
@@ -217,6 +220,97 @@ const CasinoModel = ({
       }
     }
   }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, heatMapEnabled, tableColor, etgColor, specialObjectsColor, casinoDataMap])
+
+  // Mouse interaction handlers
+  useEffect(() => {
+    if (!gl || !gl.domElement) return
+
+    const canvas = gl.domElement
+
+    const handlePointerMove = (event) => {
+      // Calculate mouse position in normalized device coordinates
+      const rect = canvas.getBoundingClientRect()
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+      // Update raycaster
+      raycaster.setFromCamera({ x, y }, camera)
+
+      // Check for intersections with machines that have data
+      const machinesWithData = Array.from(objectMeshMap.values()).filter(mesh => {
+        const data = casinoDataMap.get(mesh.name)
+        return data !== undefined
+      })
+
+      const intersects = raycaster.intersectObjects(machinesWithData, false)
+
+      if (intersects.length > 0) {
+        const intersectedMesh = intersects[0].object
+        const machineData = casinoDataMap.get(intersectedMesh.name)
+
+        if (machineData && intersectedMesh !== hoveredMesh) {
+          // Change cursor to pointer
+          canvas.style.cursor = 'pointer'
+
+          // Notify parent about hover
+          if (onMachineHover) {
+            onMachineHover(machineData, {
+              x: event.clientX,
+              y: event.clientY
+            })
+          }
+
+          setHoveredMesh(intersectedMesh)
+        }
+      } else {
+        // Reset cursor and hover state
+        canvas.style.cursor = 'default'
+
+        if (hoveredMesh) {
+          if (onMachineHover) {
+            onMachineHover(null, null)
+          }
+          setHoveredMesh(null)
+        }
+      }
+    }
+
+    const handleClick = (event) => {
+      // Calculate mouse position
+      const rect = canvas.getBoundingClientRect()
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+
+      // Update raycaster
+      raycaster.setFromCamera({ x, y }, camera)
+
+      // Check for intersections
+      const machinesWithData = Array.from(objectMeshMap.values()).filter(mesh => {
+        const data = casinoDataMap.get(mesh.name)
+        return data !== undefined
+      })
+
+      const intersects = raycaster.intersectObjects(machinesWithData, false)
+
+      if (intersects.length > 0) {
+        const intersectedMesh = intersects[0].object
+        const machineData = casinoDataMap.get(intersectedMesh.name)
+
+        if (machineData && onMachineClick) {
+          onMachineClick(machineData)
+        }
+      }
+    }
+
+    canvas.addEventListener('pointermove', handlePointerMove)
+    canvas.addEventListener('click', handleClick)
+
+    return () => {
+      canvas.removeEventListener('pointermove', handlePointerMove)
+      canvas.removeEventListener('click', handleClick)
+      canvas.style.cursor = 'default'
+    }
+  }, [gl, camera, raycaster, objectMeshMap, casinoDataMap, hoveredMesh, onMachineHover, onMachineClick])
 
   if (!gltf) return null
 

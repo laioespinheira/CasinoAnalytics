@@ -4,6 +4,8 @@ import CasinoScene from './components/CasinoScene'
 import BasicDashboard from './components/BasicDashboard'
 import GUI from './components/GUI'
 import NavigationBar from './components/NavigationBar'
+import MachineTooltip from './components/MachineTooltip'
+import MachineDetailCard from './components/MachineDetailCard'
 import useCasinoData from './hooks/useCasinoData'
 
 function App() {
@@ -24,11 +26,25 @@ function App() {
     hourOfDay: 'all'
   })
 
+  // Interaction states
+  const [hoveredMachine, setHoveredMachine] = useState(null)
+  const [tooltipPosition, setTooltipPosition] = useState(null)
+  const [selectedMachine, setSelectedMachine] = useState(null)
+
   // Load casino data
   const { casinoData, loading, error, getFilteredData, getHeatMapData } = useCasinoData()
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters)
+  }
+
+  const handleMachineHover = (machineData, position) => {
+    setHoveredMachine(machineData)
+    setTooltipPosition(position)
+  }
+
+  const handleMachineClick = (machineData) => {
+    setSelectedMachine(machineData)
   }
 
   return (
@@ -92,9 +108,27 @@ function App() {
                 tableColor={tableColor}
                 etgColor={etgColor}
                 specialObjectsColor={specialObjectsColor}
+                onMachineHover={handleMachineHover}
+                onMachineClick={handleMachineClick}
               />
             </Canvas>
           </div>
+
+          {/* Machine Tooltip */}
+          {hoveredMachine && tooltipPosition && (
+            <MachineTooltip
+              position={tooltipPosition}
+              machineData={hoveredMachine}
+            />
+          )}
+
+          {/* Machine Detail Card */}
+          {selectedMachine && (
+            <MachineDetailCard
+              machineData={selectedMachine}
+              onClose={() => setSelectedMachine(null)}
+            />
+          )}
 
           <GUI
             backgroundColor={backgroundColor}

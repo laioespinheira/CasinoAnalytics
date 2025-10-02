@@ -4,10 +4,10 @@ import { OrbitControls } from '@react-three/drei'
 import CasinoModel from './CasinoModel'
 import Lighting from './Lighting'
 
-const CasinoScene = ({ 
-  backgroundColor, 
-  ambientIntensity, 
-  directionalIntensity, 
+const CasinoScene = ({
+  backgroundColor,
+  ambientIntensity,
+  directionalIntensity,
   casinoData,
   filters,
   getFilteredData,
@@ -16,7 +16,9 @@ const CasinoScene = ({
   heatMapEnabled,
   tableColor,
   etgColor,
-  specialObjectsColor
+  specialObjectsColor,
+  onMachineHover,
+  onMachineClick
 }) => {
   const { camera } = useThree()
   const controlsRef = useRef()
@@ -49,7 +51,7 @@ const CasinoScene = ({
         directionalIntensity={directionalIntensity}
       />
       
-      <CasinoModel 
+      <CasinoModel
         casinoData={casinoData}
         filters={filters}
         getFilteredData={getFilteredData}
@@ -59,6 +61,8 @@ const CasinoScene = ({
         tableColor={tableColor}
         etgColor={etgColor}
         specialObjectsColor={specialObjectsColor}
+        onMachineHover={onMachineHover}
+        onMachineClick={onMachineClick}
       />
     </>
   )
