@@ -5,7 +5,6 @@ import BasicDashboard from './components/BasicDashboard'
 import GUI from './components/GUI'
 import NavigationBar from './components/NavigationBar'
 import MachineTooltip from './components/MachineTooltip'
-import MachineDetailCard from './components/MachineDetailCard'
 import useCasinoData from './hooks/useCasinoData'
 
 function App() {
@@ -17,6 +16,7 @@ function App() {
   const [etgColor, setEtgColor] = useState('#dedede')
   const [specialObjectsColor, setSpecialObjectsColor] = useState('#ffffff')
   const [heatMapEnabled, setHeatMapEnabled] = useState(false)
+  const [showBankLabels, setShowBankLabels] = useState(true)
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: 'all',
@@ -29,10 +29,18 @@ function App() {
   // Interaction states
   const [hoveredMachine, setHoveredMachine] = useState(null)
   const [tooltipPosition, setTooltipPosition] = useState(null)
-  const [selectedMachine, setSelectedMachine] = useState(null)
 
   // Load casino data
-  const { casinoData, loading, error, getFilteredData, getHeatMapData } = useCasinoData()
+  const {
+    casinoData,
+    loading,
+    error,
+    getFilteredData,
+    getHeatMapData,
+    getBankAggregates,
+    getUniqueLocations,
+    getMachinesByLocation
+  } = useCasinoData()
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters)
@@ -41,10 +49,6 @@ function App() {
   const handleMachineHover = (machineData, position) => {
     setHoveredMachine(machineData)
     setTooltipPosition(position)
-  }
-
-  const handleMachineClick = (machineData) => {
-    setSelectedMachine(machineData)
   }
 
   return (
@@ -58,6 +62,8 @@ function App() {
             onViewChange={setCurrentView}
             heatMapEnabled={heatMapEnabled}
             setHeatMapEnabled={setHeatMapEnabled}
+            showBankLabels={showBankLabels}
+            setShowBankLabels={setShowBankLabels}
           />
           <BasicDashboard />
         </div>
@@ -70,6 +76,8 @@ function App() {
             onViewChange={setCurrentView}
             heatMapEnabled={heatMapEnabled}
             setHeatMapEnabled={setHeatMapEnabled}
+            showBankLabels={showBankLabels}
+            setShowBankLabels={setShowBankLabels}
           />
           <div style={{
             position: 'fixed',
@@ -109,7 +117,9 @@ function App() {
                 etgColor={etgColor}
                 specialObjectsColor={specialObjectsColor}
                 onMachineHover={handleMachineHover}
-                onMachineClick={handleMachineClick}
+                getUniqueLocations={getUniqueLocations}
+                getMachinesByLocation={getMachinesByLocation}
+                showBankLabels={showBankLabels}
               />
             </Canvas>
           </div>
@@ -119,14 +129,6 @@ function App() {
             <MachineTooltip
               position={tooltipPosition}
               machineData={hoveredMachine}
-            />
-          )}
-
-          {/* Machine Detail Card */}
-          {selectedMachine && (
-            <MachineDetailCard
-              machineData={selectedMachine}
-              onClose={() => setSelectedMachine(null)}
             />
           )}
 

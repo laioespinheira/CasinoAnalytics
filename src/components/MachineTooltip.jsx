@@ -40,7 +40,7 @@ const MachineTooltip = ({ position, machineData }) => {
         color: '#ffffff',
         marginBottom: '12px'
       }}>
-        {machineData.blender_id}
+        {machineData.machineFullName || machineData.blender_id}
       </div>
 
       {/* Key Metrics */}
@@ -50,11 +50,11 @@ const MachineTooltip = ({ position, machineData }) => {
         gap: '8px',
         marginBottom: '8px'
       }}>
-        {/* Revenue */}
+        {/* Stroke (Bets) */}
         <div>
-          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Revenue</div>
+          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Stroke</div>
           <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#10b981' }}>
-            ${(machineData.revenue || 0).toLocaleString()}
+            {(machineData.stroke || 0).toLocaleString()}
           </div>
         </div>
 
@@ -66,26 +66,24 @@ const MachineTooltip = ({ position, machineData }) => {
           </div>
         </div>
 
-        {/* Hold % */}
+        {/* Location */}
         <div>
-          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Hold %</div>
+          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Location</div>
           <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#f59e0b' }}>
-            {machineData.turnover > 0
-              ? ((machineData.revenue / machineData.turnover) * 100).toFixed(1)
-              : '0.0'}%
+            {machineData.location || 'N/A'}
           </div>
         </div>
 
-        {/* Patron Hours */}
+        {/* Zone */}
         <div>
-          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Hours</div>
+          <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '2px' }}>Zone</div>
           <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#8b5cf6' }}>
-            {(machineData.patronHours || 0).toFixed(1)}
+            {machineData.zone || 'N/A'}
           </div>
         </div>
       </div>
 
-      {/* Zone Info */}
+      {/* Time Info */}
       <div style={{
         fontSize: '0.7rem',
         color: '#6b7280',
@@ -93,7 +91,7 @@ const MachineTooltip = ({ position, machineData }) => {
         paddingTop: '8px',
         borderTop: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
-        Zone: {machineData.zone || 'Unknown'} • {machineData.occupancy === 1 ? '🟢 Active' : '⚪ Idle'}
+        {machineData.day} • {machineData.hour} • {machineData.occupancy === 1 ? '🟢 Active' : '⚪ Idle'}
       </div>
 
       {/* Click hint */}

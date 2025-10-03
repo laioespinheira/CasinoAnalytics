@@ -26,9 +26,10 @@ const useCasinoData = () => {
               obj[header] = values[index] || ''
             })
             
-            // Convert turnover to number
+            // Convert numeric fields
             obj.turnover = parseFloat(obj.turnover) || 0
-            
+            obj.stroke = parseFloat(obj.stroke) || 0
+
             return obj
           })
         
@@ -137,13 +138,159 @@ const useCasinoData = () => {
     return 3 // Strong performance
   }
 
+  // Aggregate data by zone
+  const getZoneAggregates = (filters) => {
+    const filteredData = getFilteredData(filters)
+    const zoneMap = new Map()
+
+    filteredData.forEach(item => {
+      const zone = item.zone || 'Unknown'
+      if (!zoneMap.has(zone)) {
+        zoneMap.set(zone, {
+          zone,
+          machines: new Set(),
+          locations: new Set(),
+          stroke: 0,
+          turnover: 0,
+          count: 0
+        })
+      }
+
+      const zoneData = zoneMap.get(zone)
+      zoneData.machines.add(item.blender_id)
+      zoneData.locations.add(item.location)
+      zoneData.stroke += item.stroke
+      zoneData.turnover += item.turnover
+      zoneData.count++
+    })
+
+    // Convert to array and calculate additional metrics
+    return Array.from(zoneMap.values()).map(zone => ({
+      ...zone,
+      machineCount: zone.machines.size,
+      bankCount: zone.locations.size,
+      avgStroke: zone.stroke / zone.machineCount,
+      avgTurnover: zone.turnover / zone.machineCount,
+      machines: Array.from(zone.machines),
+      locations: Array.from(zone.locations)
+    }))
+  }
+
+  // Aggregate data by bank (location)
+  const getBankAggregates = (filters, zoneFilter = null) => {
+    let filteredData = getFilteredData(filters)
+
+    if (zoneFilter) {
+      filteredData = filteredData.filter(item => item.zone === zoneFilter)
+    }
+
+    const bankMap = new Map()
+
+    filteredData.forEach(item => {
+      const bankKey = `${item.zone}_${item.location}`
+      if (!bankMap.has(bankKey)) {
+        bankMap.set(bankKey, {
+          location: item.location,
+          zone: item.zone,
+          machines: new Set(),
+          stroke: 0,
+          turnover: 0,
+          count: 0
+        })
+      }
+
+      const bankData = bankMap.get(bankKey)
+      bankData.machines.add(item.blender_id)
+      bankData.stroke += item.stroke
+      bankData.turnover += item.turnover
+      bankData.count++
+    })
+
+    return Array.from(bankMap.values()).map(bank => ({
+      ...bank,
+      machineCount: bank.machines.size,
+      avgStroke: bank.stroke / bank.machineCount,
+      avgTurnover: bank.turnover / bank.machineCount,
+      machines: Array.from(bank.machines)
+    }))
+  }
+
+  // Get unique locations for creating bank bounding boxes
+  // For Tables: group by zone (e.g., "Pit 3")
+  // For Slots/ETGs: group by location (e.g., "05F1")
+  const getUniqueLocations = () => {
+    const locations = new Set()
+    const seenZones = new Set() // Track table zones we've already added
+
+    casinoData.forEach(item => {
+      if (item.machineType === 'Tables') {
+        // For tables, group by zone only
+        if (item.zone && !seenZones.has(item.zone)) {
+          const key = `TABLE_${item.zone}` // Use special prefix to identify table zones
+          locations.add(key)
+          seenZones.add(item.zone)
+        }
+      } else {
+        // For slots/ETGs, group by location
+        if (item.location) {
+          const key = `${item.zone}_${item.location}`
+          locations.add(key)
+        }
+      }
+    })
+
+    return Array.from(locations).map(key => {
+      if (key.startsWith('TABLE_')) {
+        // This is a table zone
+        const zone = key.replace('TABLE_', '')
+        return { zone, location: null, key, isTableZone: true }
+      } else {
+        // This is a slot/ETG location
+        const [zone, location] = key.split('_')
+        return { zone, location, key, isTableZone: false }
+      }
+    })
+  }
+
+  // Get machines by location for spatial optimization
+  const getMachinesByLocation = (zone, location) => {
+    // Check if this is a table zone (location will be null for table zones)
+    if (location === null) {
+      // Return all tables in this zone
+      return casinoData.filter(item => item.zone === zone && item.machineType === 'Tables')
+    } else {
+      // Return all machines in this specific location
+      return casinoData.filter(item => item.zone === zone && item.location === location)
+    }
+  }
+
+  // Get unique zones for creating bounding boxes
+  const getUniqueZones = () => {
+    const zones = new Set()
+    casinoData.forEach(item => {
+      if (item.zone) zones.add(item.zone)
+    })
+    return Array.from(zones)
+  }
+
+  // Get machines by zone for spatial optimization
+  const getMachinesByZone = (zone) => {
+    return casinoData.filter(item => item.zone === zone)
+  }
+
   return {
     casinoData,
     loading,
     error,
     getDataByBlenderId,
     getFilteredData,
-    getHeatMapData
+    getHeatMapData,
+    getZoneAggregates,
+    getBankAggregates,
+    getUniqueZones,
+    getMachinesByZone,
+    getUniqueLocations,
+    getMachinesByLocation
   }
 }
 

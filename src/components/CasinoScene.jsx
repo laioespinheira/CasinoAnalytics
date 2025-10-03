@@ -18,7 +18,9 @@ const CasinoScene = ({
   etgColor,
   specialObjectsColor,
   onMachineHover,
-  onMachineClick
+  getUniqueLocations,
+  getMachinesByLocation,
+  showBankLabels
 }) => {
   const { camera } = useThree()
   const controlsRef = useRef()
@@ -62,7 +64,9 @@ const CasinoScene = ({
         etgColor={etgColor}
         specialObjectsColor={specialObjectsColor}
         onMachineHover={onMachineHover}
-        onMachineClick={onMachineClick}
+        getUniqueLocations={getUniqueLocations}
+        getMachinesByLocation={getMachinesByLocation}
+        showBankLabels={showBankLabels}
       />
     </>
   )

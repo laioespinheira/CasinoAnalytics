@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { useLoader, useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as THREE from 'three'
+import BankLabel from './BankLabel'
 
 const TABLE_NAMES = [
   "VisualSceneNode1221", "VisualSceneNode1222", "VisualSceneNode1223", 
@@ -20,7 +21,9 @@ const CasinoModel = ({
   etgColor,
   specialObjectsColor,
   onMachineHover,
-  onMachineClick
+  getUniqueLocations,
+  getMachinesByLocation,
+  showBankLabels = true
 }) => {
   const gltf = useLoader(GLTFLoader, './models/casino_floor_map.glb')
   const groupRef = useRef()
@@ -30,6 +33,8 @@ const CasinoModel = ({
   const [objectMeshMap, setObjectMeshMap] = useState(new Map())
   const [originalMaterials, setOriginalMaterials] = useState(new Map())
   const [hoveredMesh, setHoveredMesh] = useState(null)
+  const [bankBoundingBoxes, setBankBoundingBoxes] = useState(new Map())
+  const [bankLabels, setBankLabels] = useState([])
 
   // Cache casino data lookup for performance
   const casinoDataMap = useMemo(() => {
@@ -41,6 +46,73 @@ const CasinoModel = ({
     })
     return map
   }, [casinoData])
+
+  // Calculate bank (location) bounding boxes for hierarchical interaction
+  useEffect(() => {
+    if (objectMeshMap.size > 0 && getUniqueLocations && getMachinesByLocation) {
+      const locations = getUniqueLocations()
+      const boundingBoxMap = new Map()
+      const labels = []
+
+      locations.forEach(({ zone, location, key, isTableZone }) => {
+        const bankMachines = getMachinesByLocation(zone, location)
+        const bankMeshes = bankMachines
+          .map(machine => objectMeshMap.get(machine.blender_id))
+          .filter(mesh => mesh !== undefined)
+
+        if (bankMeshes.length > 0) {
+          // Calculate bounding box for all meshes in this bank/zone
+          const box = new THREE.Box3()
+          bankMeshes.forEach(mesh => {
+            const meshBox = new THREE.Box3().setFromObject(mesh)
+            box.union(meshBox)
+          })
+
+          // Create invisible mesh for raycasting
+          const size = box.getSize(new THREE.Vector3())
+          const center = box.getCenter(new THREE.Vector3())
+
+          const geometry = new THREE.BoxGeometry(size.x, size.y, size.z)
+          const material = new THREE.MeshBasicMaterial({
+            visible: false,
+            transparent: true,
+            opacity: 0
+          })
+          const boxMesh = new THREE.Mesh(geometry, material)
+          boxMesh.position.copy(center)
+          boxMesh.userData = { type: 'bank', zone, location, key, isTableZone }
+
+          boundingBoxMap.set(key, boxMesh)
+
+          // Count unique machines (by machineFullName, not rows)
+          const uniqueMachines = new Set(bankMachines.map(m => m.machineFullName))
+          const machineCount = uniqueMachines.size
+
+          // Display name: zone for tables, location for slots/ETGs
+          const displayName = isTableZone ? zone : location
+
+          // Create label data
+          labels.push({
+            key,
+            position: [center.x, center.y, center.z],
+            bankName: displayName,
+            zone,
+            machineCount,
+            isTableZone
+          })
+
+          // Add to scene
+          if (groupRef.current) {
+            groupRef.current.add(boxMesh)
+          }
+        }
+      })
+
+      setBankBoundingBoxes(boundingBoxMap)
+      setBankLabels(labels)
+      console.log('🏦 Bank bounding boxes created:', boundingBoxMap.size, 'locations')
+    }
+  }, [objectMeshMap, getUniqueLocations, getMachinesByLocation])
 
   // Heat map color function
   const getHeatMapColor = (heatLevel) => {
@@ -221,11 +293,12 @@ const CasinoModel = ({
     }
   }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, heatMapEnabled, tableColor, etgColor, specialObjectsColor, casinoDataMap])
 
-  // Mouse interaction handlers
+  // Hierarchical mouse interaction with distance-based LOD
   useEffect(() => {
     if (!gl || !gl.domElement) return
 
     const canvas = gl.domElement
+    const LOD_DISTANCE = 100 // Only check individual machines when camera is closer than this
 
     const handlePointerMove = (event) => {
       // Calculate mouse position in normalized device coordinates
@@ -236,86 +309,86 @@ const CasinoModel = ({
       // Update raycaster
       raycaster.setFromCamera({ x, y }, camera)
 
-      // Check for intersections with machines that have data
-      const machinesWithData = Array.from(objectMeshMap.values()).filter(mesh => {
-        const data = casinoDataMap.get(mesh.name)
-        return data !== undefined
-      })
+      // Calculate camera distance from origin for LOD
+      const cameraDistance = camera.position.length()
 
-      const intersects = raycaster.intersectObjects(machinesWithData, false)
+      // Level 1: Always check bank bounding boxes first (cheap operation)
+      if (bankBoundingBoxes.size > 0) {
+        const bankBoxArray = Array.from(bankBoundingBoxes.values())
+        const bankIntersects = raycaster.intersectObjects(bankBoxArray, false)
 
-      if (intersects.length > 0) {
-        const intersectedMesh = intersects[0].object
-        const machineData = casinoDataMap.get(intersectedMesh.name)
-
-        if (machineData && intersectedMesh !== hoveredMesh) {
-          // Change cursor to pointer
+        if (bankIntersects.length > 0) {
           canvas.style.cursor = 'pointer'
 
-          // Notify parent about hover
-          if (onMachineHover) {
-            onMachineHover(machineData, {
-              x: event.clientX,
-              y: event.clientY
-            })
+          // If camera is far away, only show bank-level interaction
+          if (cameraDistance > LOD_DISTANCE) {
+            // Don't check individual machines, bank interaction only
+            return
           }
 
-          setHoveredMesh(intersectedMesh)
-        }
-      } else {
-        // Reset cursor and hover state
-        canvas.style.cursor = 'default'
+          // Level 2: Camera is close enough, check individual machines within the bank
+          const hoveredBank = bankIntersects[0].object.userData
+          const bankMachines = getMachinesByLocation ? getMachinesByLocation(hoveredBank.zone, hoveredBank.location) : []
+          const bankMeshes = bankMachines
+            .map(machine => objectMeshMap.get(machine.blender_id))
+            .filter(mesh => mesh !== undefined)
 
-        if (hoveredMesh) {
-          if (onMachineHover) {
-            onMachineHover(null, null)
+          const machineIntersects = raycaster.intersectObjects(bankMeshes, false)
+
+          if (machineIntersects.length > 0) {
+            const intersectedMesh = machineIntersects[0].object
+            const machineData = casinoDataMap.get(intersectedMesh.name)
+
+            if (machineData && intersectedMesh !== hoveredMesh) {
+              // Notify parent about machine hover
+              if (onMachineHover) {
+                onMachineHover(machineData, {
+                  x: event.clientX,
+                  y: event.clientY
+                })
+              }
+              setHoveredMesh(intersectedMesh)
+            }
+            return
           }
-          setHoveredMesh(null)
         }
       }
-    }
 
-    const handleClick = (event) => {
-      // Calculate mouse position
-      const rect = canvas.getBoundingClientRect()
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
-
-      // Update raycaster
-      raycaster.setFromCamera({ x, y }, camera)
-
-      // Check for intersections
-      const machinesWithData = Array.from(objectMeshMap.values()).filter(mesh => {
-        const data = casinoDataMap.get(mesh.name)
-        return data !== undefined
-      })
-
-      const intersects = raycaster.intersectObjects(machinesWithData, false)
-
-      if (intersects.length > 0) {
-        const intersectedMesh = intersects[0].object
-        const machineData = casinoDataMap.get(intersectedMesh.name)
-
-        if (machineData && onMachineClick) {
-          onMachineClick(machineData)
+      // No intersections - reset cursor and hover state
+      canvas.style.cursor = 'default'
+      if (hoveredMesh) {
+        if (onMachineHover) {
+          onMachineHover(null, null)
         }
+        setHoveredMesh(null)
       }
     }
 
     canvas.addEventListener('pointermove', handlePointerMove)
-    canvas.addEventListener('click', handleClick)
 
     return () => {
       canvas.removeEventListener('pointermove', handlePointerMove)
-      canvas.removeEventListener('click', handleClick)
       canvas.style.cursor = 'default'
     }
-  }, [gl, camera, raycaster, objectMeshMap, casinoDataMap, hoveredMesh, onMachineHover, onMachineClick])
+  }, [gl, camera, raycaster, objectMeshMap, casinoDataMap, hoveredMesh, onMachineHover, bankBoundingBoxes, getMachinesByLocation])
 
   if (!gltf) return null
 
   return (
-    <group ref={groupRef} />
+    <>
+      <group ref={groupRef} />
+
+      {/* Bank Labels */}
+      {showBankLabels && bankLabels.map(label => (
+        <BankLabel
+          key={label.key}
+          position={label.position}
+          bankName={label.bankName}
+          zone={label.zone}
+          machineCount={label.machineCount}
+        />
+      ))}
+    </>
   )
 }
 
