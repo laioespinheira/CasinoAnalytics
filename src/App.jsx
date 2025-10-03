@@ -16,7 +16,7 @@ function App() {
   const [etgColor, setEtgColor] = useState('#dedede')
   const [specialObjectsColor, setSpecialObjectsColor] = useState('#ffffff')
   const [heatMapEnabled, setHeatMapEnabled] = useState(false)
-  const [showBankLabels, setShowBankLabels] = useState(true)
+  const [showBankLabels, setShowBankLabels] = useState(false)
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: 'all',

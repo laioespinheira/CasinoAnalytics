@@ -24,6 +24,7 @@ const GUIComponent = ({
     gui.domElement.style.top = '120px'
     gui.domElement.style.right = '15px'
     gui.domElement.style.zIndex = '999'
+    gui.close() // Start collapsed
     guiRef.current = gui
 
     // Background color control

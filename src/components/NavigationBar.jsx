@@ -90,38 +90,39 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     left: 0,
     right: 0,
     zIndex: 1000,
-    background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%)',
-    borderBottom: '2px solid #475569',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    padding: '12px 20px'
+    background: '#ffffff',
+    borderBottom: '1px solid #e5e7eb',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+    padding: '16px 32px'
   }
 
   const containerStyles = {
-    maxWidth: '1400px',
+    maxWidth: '1600px',
     margin: '0 auto',
     display: 'flex',
     flexDirection: currentView === '3d' ? 'column' : 'row',
     alignItems: currentView === '3d' ? 'stretch' : 'center',
-    gap: currentView === '3d' ? '12px' : '20px',
+    gap: currentView === '3d' ? '16px' : '24px',
     flexWrap: 'wrap'
   }
 
   const titleStyles = {
-    color: '#ffffff',
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
+    color: '#111827',
+    fontSize: '1.25rem',
+    fontWeight: '600',
     margin: 0,
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    minWidth: '200px'
+    gap: '10px',
+    minWidth: '200px',
+    letterSpacing: '-0.01em'
   }
 
   const iconStyles = {
-    width: '32px',
-    height: '32px',
-    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-    borderRadius: '8px',
+    width: '28px',
+    height: '28px',
+    background: '#3b82f6',
+    borderRadius: '6px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
@@ -142,7 +143,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const labelStyles = {
-    color: '#cbd5e1',
+    color: '#6b7280',
     fontSize: '0.75rem',
     fontWeight: '500',
     textTransform: 'uppercase',
@@ -151,12 +152,12 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const selectStyles = {
-    background: '#475569',
-    border: '1px solid #64748b',
-    borderRadius: '6px',
-    color: '#ffffff',
+    background: '#f9fafb',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    color: '#111827',
     fontSize: '0.875rem',
-    padding: '6px 12px',
+    padding: '8px 12px',
     minWidth: '120px',
     outline: 'none',
     cursor: 'pointer',
@@ -164,9 +165,9 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const buttonStyles = {
-    background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+    background: '#ef4444',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '8px',
     color: '#ffffff',
     fontSize: '0.875rem',
     fontWeight: '500',
@@ -184,12 +185,12 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const dropdownButtonStyles = {
-    background: '#475569',
-    border: '1px solid #64748b',
-    borderRadius: '6px',
-    color: '#ffffff',
+    background: '#f9fafb',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    color: '#111827',
     fontSize: '0.875rem',
-    padding: '6px 12px',
+    padding: '8px 12px',
     minWidth: '140px',
     outline: 'none',
     cursor: 'pointer',
@@ -201,25 +202,25 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
 
   const dropdownListStyles = {
     position: 'absolute',
-    top: '100%',
+    top: 'calc(100% + 4px)',
     left: 0,
     right: 0,
-    background: '#475569',
-    border: '1px solid #64748b',
-    borderTop: 'none',
-    borderRadius: '0 0 6px 6px',
+    background: '#ffffff',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
     zIndex: 1000,
-    maxHeight: '120px',
-    overflowY: 'auto'
+    maxHeight: '200px',
+    overflowY: 'auto',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
   }
 
   const dropdownItemStyles = {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '8px 12px',
+    padding: '10px 12px',
     fontSize: '0.875rem',
-    color: '#ffffff',
+    color: '#111827',
     cursor: 'pointer',
     transition: 'background 0.2s ease'
   }
@@ -228,13 +229,13 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    minWidth: '160px'
+    minWidth: '320px'
   }
 
   const sliderStyles = {
     width: '100%',
     height: '6px',
-    background: '#64748b',
+    background: '#e5e7eb',
     borderRadius: '3px',
     outline: 'none',
     cursor: 'pointer',
@@ -252,9 +253,9 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
       background: #3b82f6;
       cursor: pointer;
       border: 2px solid #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-    
+
     input[type="range"]::-moz-range-thumb {
       height: 16px;
       width: 16px;
@@ -262,18 +263,18 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
       background: #3b82f6;
       cursor: pointer;
       border: 2px solid #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
-    
+
     input[type="range"]::-webkit-slider-track {
-      background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--value), #64748b var(--value), #64748b 100%);
+      background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--value), #e5e7eb var(--value), #e5e7eb 100%);
       height: 6px;
       border-radius: 3px;
     }
   `
 
   const sliderLabelStyles = {
-    color: '#cbd5e1',
+    color: '#374151',
     fontSize: '0.875rem',
     textAlign: 'center',
     fontWeight: '500'
@@ -295,17 +296,19 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             Casino Analytics
           </h1>
 
-          {/* View Toggle Buttons */}
-          <div style={{ display: 'flex', background: '#475569', borderRadius: '8px', padding: '4px' }}>
+          {/* View Toggle - Tab Style */}
+          <div style={{ display: 'flex', gap: '2px', marginLeft: '20px' }}>
             <button
               onClick={() => onViewChange('analytics')}
               style={{
-                background: currentView === 'analytics' ? '#3b82f6' : 'transparent',
-                color: '#ffffff',
+                background: 'transparent',
+                color: currentView === 'analytics' ? '#111827' : '#9ca3af',
                 border: 'none',
-                borderRadius: '6px',
-                padding: '8px 16px',
+                borderBottom: currentView === 'analytics' ? '2px solid #3b82f6' : '2px solid transparent',
+                borderRadius: '0',
+                padding: '8px 4px',
                 fontSize: '0.875rem',
+                fontWeight: currentView === 'analytics' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -313,17 +316,22 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 transition: 'all 0.2s ease'
               }}
             >
-              📊 Analytics
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Analytics
             </button>
             <button
               onClick={() => onViewChange('3d')}
               style={{
-                background: currentView === '3d' ? '#3b82f6' : 'transparent',
-                color: '#ffffff',
+                background: 'transparent',
+                color: currentView === '3d' ? '#111827' : '#9ca3af',
                 border: 'none',
-                borderRadius: '6px',
-                padding: '8px 16px',
+                borderBottom: currentView === '3d' ? '2px solid #3b82f6' : '2px solid transparent',
+                borderRadius: '0',
+                padding: '8px 4px',
                 fontSize: '0.875rem',
+                fontWeight: currentView === '3d' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -331,7 +339,10 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 transition: 'all 0.2s ease'
               }}
             >
-              🏢 3D View
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              3D View
             </button>
           </div>
         </div>
@@ -342,18 +353,28 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
           {/* Zone Filter */}
           <div style={filterGroupStyles}>
             <label style={labelStyles}>Zone</label>
-            <select
-              value={filters.zone}
-              onChange={(e) => handleFilterChange('zone', e.target.value)}
-              style={selectStyles}
-              onMouseEnter={(e) => e.target.style.background = '#64748b'}
-              onMouseLeave={(e) => e.target.style.background = '#475569'}
-            >
-              <option value="all">All Zones</option>
-              {zones.map(zone => (
-                <option key={zone} value={zone}>{zone}</option>
-              ))}
-            </select>
+            <div style={dropdownContainerStyles}>
+              <select
+                value={filters.zone}
+                onChange={(e) => handleFilterChange('zone', e.target.value)}
+                style={{
+                  ...selectStyles,
+                  appearance: 'none',
+                  paddingRight: '32px',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                  backgroundSize: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+              >
+                <option value="all">All Zones</option>
+                {zones.map(zone => (
+                  <option key={zone} value={zone}>{zone}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Machine Type Filter */}
@@ -363,8 +384,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               <button
                 style={dropdownButtonStyles}
                 onClick={() => setMachineTypeDropdownOpen(!machineTypeDropdownOpen)}
-                onMouseEnter={(e) => e.target.style.background = '#64748b'}
-                onMouseLeave={(e) => e.target.style.background = '#475569'}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
               >
                 <span>
                   {filters.machineType.length === 0 
@@ -392,7 +413,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                     <div
                       key={type}
                       style={dropdownItemStyles}
-                      onMouseEnter={(e) => e.target.style.background = '#64748b'}
+                      onMouseEnter={(e) => e.target.style.background = '#f9fafb'}
                       onMouseLeave={(e) => e.target.style.background = 'transparent'}
                     >
                       <input
@@ -412,51 +433,81 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
           {/* Game Type Filter */}
           <div style={filterGroupStyles}>
             <label style={labelStyles}>Game Type</label>
-            <select
-              value={filters.gameType}
-              onChange={(e) => handleFilterChange('gameType', e.target.value)}
-              style={selectStyles}
-              onMouseEnter={(e) => e.target.style.background = '#64748b'}
-              onMouseLeave={(e) => e.target.style.background = '#475569'}
-            >
-              <option value="all">All Games</option>
-              {gameTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
+            <div style={dropdownContainerStyles}>
+              <select
+                value={filters.gameType}
+                onChange={(e) => handleFilterChange('gameType', e.target.value)}
+                style={{
+                  ...selectStyles,
+                  appearance: 'none',
+                  paddingRight: '32px',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                  backgroundSize: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+              >
+                <option value="all">All Games</option>
+                {gameTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Occupancy Filter */}
           <div style={filterGroupStyles}>
             <label style={labelStyles}>Occupancy</label>
-            <select
-              value={filters.occupancy}
-              onChange={(e) => handleFilterChange('occupancy', e.target.value)}
-              style={selectStyles}
-              onMouseEnter={(e) => e.target.style.background = '#64748b'}
-              onMouseLeave={(e) => e.target.style.background = '#475569'}
-            >
-              <option value="all">All</option>
-              <option value="occupied">🔴 Occupied</option>
-              <option value="vacant">⚪ Vacant</option>
-            </select>
+            <div style={dropdownContainerStyles}>
+              <select
+                value={filters.occupancy}
+                onChange={(e) => handleFilterChange('occupancy', e.target.value)}
+                style={{
+                  ...selectStyles,
+                  appearance: 'none',
+                  paddingRight: '32px',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                  backgroundSize: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+              >
+                <option value="all">All</option>
+                <option value="occupied">🔴 Occupied</option>
+                <option value="vacant">⚪ Vacant</option>
+              </select>
+            </div>
           </div>
 
           {/* Day Filter */}
           <div style={filterGroupStyles}>
             <label style={labelStyles}>Day</label>
-            <select
-              value={filters.dayOfWeek}
-              onChange={(e) => handleFilterChange('dayOfWeek', e.target.value)}
-              style={selectStyles}
-              onMouseEnter={(e) => e.target.style.background = '#64748b'}
-              onMouseLeave={(e) => e.target.style.background = '#475569'}
-            >
-              <option value="all">All Days</option>
-              {daysOfWeek.map(day => (
-                <option key={day} value={day}>{day.slice(0, 3)}</option>
-              ))}
-            </select>
+            <div style={dropdownContainerStyles}>
+              <select
+                value={filters.dayOfWeek}
+                onChange={(e) => handleFilterChange('dayOfWeek', e.target.value)}
+                style={{
+                  ...selectStyles,
+                  appearance: 'none',
+                  paddingRight: '32px',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                  backgroundSize: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+              >
+                <option value="all">All Days</option>
+                {daysOfWeek.map(day => (
+                  <option key={day} value={day}>{day.slice(0, 3)}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Hour Filter - Slider */}
@@ -482,21 +533,21 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             onClick={() => setHeatMapEnabled(!heatMapEnabled)}
             style={{
               ...buttonStyles,
-              background: heatMapEnabled
-                ? 'linear-gradient(135deg, #059669, #047857)'
-                : 'linear-gradient(135deg, #64748b, #475569)',
+              background: heatMapEnabled ? '#10b981' : '#f3f4f6',
+              color: heatMapEnabled ? '#ffffff' : '#6b7280',
+              border: heatMapEnabled ? 'none' : '1px solid #d1d5db'
             }}
             onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-1px)'
+              e.target.style.opacity = '0.9'
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)'
+              e.target.style.opacity = '1'
             }}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
-            {heatMapEnabled ? 'Heat Map ON' : 'Heat Map OFF'}
+            {heatMapEnabled ? 'Heat Map' : 'Heat Map'}
           </button>
 
           {/* Bank Labels Toggle */}
@@ -505,21 +556,21 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               onClick={() => setShowBankLabels(!showBankLabels)}
               style={{
                 ...buttonStyles,
-                background: showBankLabels
-                  ? 'linear-gradient(135deg, #3b82f6, #2563eb)'
-                  : 'linear-gradient(135deg, #64748b, #475569)',
+                background: showBankLabels ? '#3b82f6' : '#f3f4f6',
+                color: showBankLabels ? '#ffffff' : '#6b7280',
+                border: showBankLabels ? 'none' : '1px solid #d1d5db'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-1px)'
+                e.target.style.opacity = '0.9'
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)'
+                e.target.style.opacity = '1'
               }}
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
-              {showBankLabels ? 'Labels ON' : 'Labels OFF'}
+              {showBankLabels ? 'Labels' : 'Labels'}
             </button>
           )}
 
@@ -537,14 +588,16 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               setFilters(defaultFilters)
               onFilterChange(defaultFilters)
             }}
-            style={buttonStyles}
+            style={{
+              ...buttonStyles,
+              background: '#ef4444',
+              color: '#ffffff'
+            }}
             onMouseEnter={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #b91c1c, #991b1b)'
-              e.target.style.transform = 'translateY(-1px)'
+              e.target.style.opacity = '0.9'
             }}
             onMouseLeave={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #dc2626, #b91c1c)'
-              e.target.style.transform = 'translateY(0)'
+              e.target.style.opacity = '1'
             }}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
