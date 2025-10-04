@@ -9,6 +9,7 @@ import useCasinoData from './hooks/useCasinoData'
 
 function App() {
   const [currentView, setCurrentView] = useState('analytics') // Default to analytics dashboard
+  const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, heatmap, comparison, time
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [ambientIntensity, setAmbientIntensity] = useState(0.51)
   const [directionalIntensity, setDirectionalIntensity] = useState(2.5)
@@ -78,6 +79,8 @@ function App() {
             setHeatMapEnabled={setHeatMapEnabled}
             showBankLabels={showBankLabels}
             setShowBankLabels={setShowBankLabels}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
           <div style={{
             position: 'fixed',

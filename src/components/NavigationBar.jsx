@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels }) => {
+const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, viewMode, onViewModeChange }) => {
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: [], // Changed to array for multiple selection
@@ -103,7 +103,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     flexDirection: currentView === '3d' ? 'column' : 'row',
     alignItems: currentView === '3d' ? 'stretch' : 'center',
     gap: currentView === '3d' ? '16px' : '24px',
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    position: 'relative'
   }
 
   const titleStyles = {
@@ -285,66 +286,172 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
       <style>{sliderCSS}</style>
       <nav style={navStyles}>
         <div style={containerStyles}>
-        {/* Title and View Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <h1 style={titleStyles}>
-            <div style={iconStyles}>
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'white' }}>
-                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
-              </svg>
-            </div>
-            Casino Analytics
-          </h1>
+        {/* Logo on the left */}
+        <h1 style={titleStyles}>
+          <div style={iconStyles}>
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20" style={{ color: 'white' }}>
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+            </svg>
+          </div>
+          Casino Analytics
+        </h1>
 
-          {/* View Toggle - Tab Style */}
-          <div style={{ display: 'flex', gap: '2px', marginLeft: '20px' }}>
+        {/* View Toggle - Centered (only main tabs) */}
+        <div style={{ position: 'absolute', left: '50%', display: 'flex', height: '47px' }}>
+          <div style={{ transform: 'translateX(-50%)', display: 'flex', alignItems: 'stretch', height: '100%' }}>
+            {/* Main Tabs - Always centered */}
             <button
               onClick={() => onViewChange('analytics')}
               style={{
                 background: 'transparent',
                 color: currentView === 'analytics' ? '#111827' : '#9ca3af',
                 border: 'none',
-                borderBottom: currentView === 'analytics' ? '2px solid #3b82f6' : '2px solid transparent',
+                borderBottom: '3px solid',
+                borderBottomColor: currentView === 'analytics' ? '#3b82f6' : 'transparent',
                 borderRadius: '0',
-                padding: '8px 4px',
-                fontSize: '0.875rem',
+                padding: '10px 16px',
+                fontSize: '1rem',
                 fontWeight: currentView === 'analytics' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '8px',
+                transition: 'color 0.2s ease, border-color 0.2s ease',
+                height: '100%',
+                boxSizing: 'border-box'
               }}
             >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
               Analytics
             </button>
+
+            <div style={{ width: '20px' }} />
+
             <button
               onClick={() => onViewChange('3d')}
               style={{
                 background: 'transparent',
                 color: currentView === '3d' ? '#111827' : '#9ca3af',
                 border: 'none',
-                borderBottom: currentView === '3d' ? '2px solid #3b82f6' : '2px solid transparent',
+                borderBottom: '3px solid',
+                borderBottomColor: currentView === '3d' ? '#3b82f6' : 'transparent',
                 borderRadius: '0',
-                padding: '8px 4px',
-                fontSize: '0.875rem',
+                padding: '10px 16px',
+                fontSize: '1rem',
                 fontWeight: currentView === '3d' ? '600' : '500',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '8px',
+                transition: 'color 0.2s ease, border-color 0.2s ease',
+                height: '100%',
+                boxSizing: 'border-box'
               }}
             >
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               3D View
             </button>
           </div>
+
+          {/* 3D View Mode Submenu - Appears after centered tabs */}
+          {currentView === '3d' && onViewModeChange && (
+            <div style={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
+              <div style={{ width: '2px', background: '#3b82f6', height: '20px', alignSelf: 'center', margin: '0 16px' }} />
+
+              <button
+                onClick={() => onViewModeChange('overall')}
+                style={{
+                  background: viewMode === 'overall' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'overall' ? '#3b82f6' : '#9ca3af',
+                  border: 'none',
+                  borderBottom: '3px solid',
+                  borderBottomColor: viewMode === 'overall' ? '#3b82f6' : 'transparent',
+                  borderRadius: '0',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  fontWeight: viewMode === 'overall' ? '500' : '400',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Overall
+              </button>
+              <button
+                onClick={() => onViewModeChange('heatmap')}
+                style={{
+                  background: viewMode === 'heatmap' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'heatmap' ? '#3b82f6' : '#9ca3af',
+                  border: 'none',
+                  borderBottom: '3px solid',
+                  borderBottomColor: viewMode === 'heatmap' ? '#3b82f6' : 'transparent',
+                  borderRadius: '0',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  fontWeight: viewMode === 'heatmap' ? '500' : '400',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Heatmap
+              </button>
+              <button
+                onClick={() => onViewModeChange('comparison')}
+                style={{
+                  background: viewMode === 'comparison' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'comparison' ? '#3b82f6' : '#9ca3af',
+                  border: 'none',
+                  borderBottom: '3px solid',
+                  borderBottomColor: viewMode === 'comparison' ? '#3b82f6' : 'transparent',
+                  borderRadius: '0',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  fontWeight: viewMode === 'comparison' ? '500' : '400',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Comparison
+              </button>
+              <button
+                onClick={() => onViewModeChange('time')}
+                style={{
+                  background: viewMode === 'time' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'time' ? '#3b82f6' : '#9ca3af',
+                  border: 'none',
+                  borderBottom: '3px solid',
+                  borderBottomColor: viewMode === 'time' ? '#3b82f6' : 'transparent',
+                  borderRadius: '0',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  fontWeight: viewMode === 'time' ? '500' : '400',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Time
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Filters - Only show in 3D view */}
