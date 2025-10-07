@@ -5,11 +5,27 @@ import BasicDashboard from './components/BasicDashboard'
 import GUI from './components/GUI'
 import NavigationBar from './components/NavigationBar'
 import MachineTooltip from './components/MachineTooltip'
+import ComparisonPanel from './components/ComparisonPanel'
+import FloorSummaryPanel from './components/FloorSummaryPanel'
 import useCasinoData from './hooks/useCasinoData'
 
 function App() {
   const [currentView, setCurrentView] = useState('analytics') // Default to analytics dashboard
   const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, heatmap, comparison, time
+
+  // Comparison mode states
+  const [comparisonPeriod, setComparisonPeriod] = useState('previousYear')
+  const [comparisonMetrics, setComparisonMetrics] = useState({
+    turnover: true,
+    revenue: true,
+    theoWin: true
+  })
+  const [displayOptions, setDisplayOptions] = useState({
+    showPercentageLabels: true,
+    showArrows: true,
+    highlightSignificant: false,
+    filter: 'all' // 'all', 'improved', 'declined'
+  })
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [ambientIntensity, setAmbientIntensity] = useState(0.51)
   const [directionalIntensity, setDirectionalIntensity] = useState(2.5)
@@ -50,6 +66,31 @@ function App() {
   const handleMachineHover = (machineData, position) => {
     setHoveredMachine(machineData)
     setTooltipPosition(position)
+  }
+
+  // Mock floor summary data for comparison mode
+  // TODO: Calculate this from actual casino data
+  const floorSummaryMetrics = {
+    turnover: {
+      current: 2400000,
+      change: 12.5
+    },
+    revenue: {
+      current: 456000,
+      change: 8.3
+    },
+    theoWin: {
+      current: 423000,
+      change: 9.1
+    },
+    bestZone: {
+      name: 'Zone C',
+      change: 18.2
+    },
+    worstZone: {
+      name: 'Zone F',
+      change: -4.3
+    }
   }
 
   return (
@@ -133,6 +174,24 @@ function App() {
               position={tooltipPosition}
               machineData={hoveredMachine}
             />
+          )}
+
+          {/* Comparison Mode Panels */}
+          {viewMode === 'comparison' && (
+            <>
+              <ComparisonPanel
+                comparisonPeriod={comparisonPeriod}
+                onComparisonChange={setComparisonPeriod}
+                metrics={comparisonMetrics}
+                onMetricsChange={setComparisonMetrics}
+                displayOptions={displayOptions}
+                onDisplayOptionsChange={setDisplayOptions}
+              />
+              <FloorSummaryPanel
+                metrics={floorSummaryMetrics}
+                comparisonPeriod={comparisonPeriod}
+              />
+            </>
           )}
 
           <GUI
