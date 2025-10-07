@@ -3,16 +3,8 @@ import React from 'react'
 const MachineDetailCard = ({ machineData, onClose }) => {
   if (!machineData) return null
 
-  const holdPercent = machineData.turnover > 0
-    ? ((machineData.revenue / machineData.turnover) * 100).toFixed(2)
-    : '0.00'
-
-  const wpm = machineData.patronHours > 0
-    ? (machineData.revenue / machineData.patronHours).toFixed(2)
-    : '0.00'
-
-  const tpm = machineData.patronHours > 0
-    ? (machineData.turnover / machineData.patronHours).toFixed(2)
+  const avgBetSize = machineData.stroke > 0
+    ? (machineData.turnover / machineData.stroke).toFixed(2)
     : '0.00'
 
   return (
@@ -106,10 +98,10 @@ const MachineDetailCard = ({ machineData, onClose }) => {
             color: 'white',
             marginBottom: '8px'
           }}>
-            {machineData.blender_id}
+            {machineData.machineFullName || machineData.blender_id}
           </h2>
 
-          {/* Zone & Status */}
+          {/* Location, Zone & Status */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -117,6 +109,8 @@ const MachineDetailCard = ({ machineData, onClose }) => {
             fontSize: '0.875rem',
             color: '#9ca3af'
           }}>
+            <span>Location: {machineData.location || 'Unknown'}</span>
+            <span>•</span>
             <span>Zone: {machineData.zone || 'Unknown'}</span>
             <span>•</span>
             <span style={{
@@ -136,7 +130,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
             gap: '16px',
             marginBottom: '24px'
           }}>
-            {/* Revenue */}
+            {/* Stroke */}
             <div style={{
               background: '#f9fafb',
               borderRadius: '12px',
@@ -150,7 +144,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 letterSpacing: '0.05em',
                 marginBottom: '8px'
               }}>
-                Revenue
+                Stroke (Bets)
               </div>
               <div style={{
                 fontSize: '1.75rem',
@@ -158,13 +152,13 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 color: '#10b981',
                 marginBottom: '4px'
               }}>
-                ${(machineData.revenue || 0).toLocaleString()}
+                {(machineData.stroke || 0).toLocaleString()}
               </div>
               <div style={{
                 fontSize: '0.75rem',
                 color: '#6b7280'
               }}>
-                Current Period
+                Total Rounds
               </div>
             </div>
 
@@ -200,7 +194,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
               </div>
             </div>
 
-            {/* Hold % */}
+            {/* Average Bet Size */}
             <div style={{
               background: '#f9fafb',
               borderRadius: '12px',
@@ -214,7 +208,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 letterSpacing: '0.05em',
                 marginBottom: '8px'
               }}>
-                Hold %
+                Avg Bet Size
               </div>
               <div style={{
                 fontSize: '1.75rem',
@@ -222,17 +216,17 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 color: '#f59e0b',
                 marginBottom: '4px'
               }}>
-                {holdPercent}%
+                ${avgBetSize}
               </div>
               <div style={{
                 fontSize: '0.75rem',
                 color: '#6b7280'
               }}>
-                Win Rate
+                Per Round
               </div>
             </div>
 
-            {/* Patron Hours */}
+            {/* Location */}
             <div style={{
               background: '#f9fafb',
               borderRadius: '12px',
@@ -246,7 +240,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 letterSpacing: '0.05em',
                 marginBottom: '8px'
               }}>
-                Patron Hours
+                Location
               </div>
               <div style={{
                 fontSize: '1.75rem',
@@ -254,74 +248,18 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 color: '#8b5cf6',
                 marginBottom: '4px'
               }}>
-                {(machineData.patronHours || 0).toFixed(1)}
+                {machineData.location || 'N/A'}
               </div>
               <div style={{
                 fontSize: '0.75rem',
                 color: '#6b7280'
               }}>
-                Play Time
+                Bank/Table
               </div>
             </div>
           </div>
 
-          {/* Performance Metrics */}
-          <div style={{
-            background: 'white',
-            border: '2px solid #f3f4f6',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px'
-          }}>
-            <h3 style={{
-              margin: '0 0 16px 0',
-              fontSize: '0.875rem',
-              fontWeight: '700',
-              color: '#111827',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>
-              Performance Metrics
-            </h3>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '12px'
-            }}>
-              {/* WPM */}
-              <div style={{
-                padding: '12px',
-                background: '#fef3c7',
-                borderRadius: '8px',
-                border: '1px solid #fbbf24'
-              }}>
-                <div style={{ fontSize: '0.7rem', color: '#92400e', marginBottom: '4px' }}>
-                  Win Per Machine (WPM)
-                </div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#78350f' }}>
-                  ${wpm}
-                </div>
-              </div>
-
-              {/* TPM */}
-              <div style={{
-                padding: '12px',
-                background: '#dbeafe',
-                borderRadius: '8px',
-                border: '1px solid #3b82f6'
-              }}>
-                <div style={{ fontSize: '0.7rem', color: '#1e3a8a', marginBottom: '4px' }}>
-                  Turnover Per Machine (TPM)
-                </div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1e40af' }}>
-                  ${tpm}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Info */}
+          {/* Time Info */}
           <div style={{
             background: '#f9fafb',
             borderRadius: '12px',
@@ -330,10 +268,10 @@ const MachineDetailCard = ({ machineData, onClose }) => {
             color: '#6b7280'
           }}>
             <div style={{ marginBottom: '8px' }}>
-              <strong style={{ color: '#111827' }}>Day:</strong> {machineData.dayOfWeek || 'Unknown'}
+              <strong style={{ color: '#111827' }}>Day:</strong> {machineData.day || 'Unknown'}
             </div>
             <div>
-              <strong style={{ color: '#111827' }}>Hour:</strong> {machineData.hourOfDay || 'N/A'}:00
+              <strong style={{ color: '#111827' }}>Hour:</strong> {machineData.hour || 'N/A'}
             </div>
           </div>
         </div>
