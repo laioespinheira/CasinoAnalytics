@@ -226,7 +226,7 @@ const FloorSummaryPanel = ({ metrics, comparisonPeriod }) => {
             gap: '6px',
             fontSize: '1.125rem',
             fontWeight: '600',
-            color: getChangeColor(metrics.theoWin.change)}
+            color: getChangeColor(metrics.theoWin.change)
           }}>
             {getArrowIcon(metrics.theoWin.change)}
             {formatPercentage(metrics.theoWin.change)}
