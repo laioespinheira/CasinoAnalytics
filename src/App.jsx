@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CasinoScene from './components/CasinoScene'
 import BasicDashboard from './components/BasicDashboard'
@@ -36,7 +36,7 @@ function App() {
   const [showBankLabels, setShowBankLabels] = useState(false)
   const [filters, setFilters] = useState({
     zone: 'all',
-    machineType: 'all',
+    machineType: [], // Array for multiple selection
     gameType: 'all',
     occupancy: 'vacant',
     dayOfWeek: 'all',
@@ -68,6 +68,42 @@ function App() {
     setTooltipPosition(position)
   }
 
+  // Auto-enable heatmap and set defaults when switching to heatmap mode
+  useEffect(() => {
+    if (currentView === '3d' && viewMode === 'heatmap') {
+      setHeatMapEnabled(true)
+      // Set default hour to 6AM and day to Monday when entering heatmap mode
+      setFilters(prev => ({ ...prev, hourOfDay: 6, dayOfWeek: 'Monday' }))
+    } else if (currentView === '3d' && viewMode !== 'heatmap') {
+      setHeatMapEnabled(false)
+    }
+  }, [currentView, viewMode])
+
+  // Keyboard navigation for hour filter in heatmap mode
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Only handle arrow keys in 3D view heatmap mode
+      if (currentView !== '3d' || viewMode !== 'heatmap') return
+
+      const currentHour = filters.hourOfDay
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        // Increment hour (0-23, wraps to 0)
+        const nextHour = currentHour === 23 ? 0 : currentHour + 1
+        setFilters(prev => ({ ...prev, hourOfDay: nextHour }))
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        // Decrement hour (0 wraps to 23)
+        const prevHour = currentHour === 0 ? 23 : currentHour - 1
+        setFilters(prev => ({ ...prev, hourOfDay: prevHour }))
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentView, viewMode, filters.hourOfDay])
+
   // Mock floor summary data for comparison mode
   // TODO: Calculate this from actual casino data
   const floorSummaryMetrics = {
@@ -92,6 +128,7 @@ function App() {
       change: -4.3
     }
   }
+
 
   return (
     <>
@@ -122,6 +159,7 @@ function App() {
             setShowBankLabels={setShowBankLabels}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
+            externalFilters={filters}
           />
           <div style={{
             position: 'fixed',
@@ -142,8 +180,8 @@ function App() {
               gl={{
                 antialias: true,
                 powerPreference: "high-performance",
-                toneMapping: 0, // LinearToneMapping
-                toneMappingExposure: 2.5 // Brighter exposure (similar to -1.22 in viewer)
+                toneMapping: 0,
+                toneMappingExposure: 2.5
               }}
               style={{ width: '100%', height: '100%' }}
             >

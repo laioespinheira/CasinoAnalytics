@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, viewMode, onViewModeChange }) => {
+const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, viewMode, onViewModeChange, externalFilters }) => {
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: [], // Changed to array for multiple selection
@@ -11,11 +11,22 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   })
 
   const [machineTypeDropdownOpen, setMachineTypeDropdownOpen] = useState(false)
+  const [hourChanging, setHourChanging] = useState(false)
 
   const [zones, setZones] = useState([])
   const [machineTypes, setMachineTypes] = useState([])
   const [gameTypes, setGameTypes] = useState([])
   const [daysOfWeek] = useState(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+
+  // Sync with external filters (from App.jsx arrow key changes)
+  useEffect(() => {
+    if (externalFilters) {
+      setFilters(externalFilters)
+      // Trigger flash effect when hour changes from external source
+      setHourChanging(true)
+      setTimeout(() => setHourChanging(false), 200)
+    }
+  }, [externalFilters?.hourOfDay])
 
   useEffect(() => {
     if (casinoData && casinoData.length > 0) {
@@ -59,7 +70,6 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const formatHourDisplay = (hour) => {
-    if (hour === 'all') return 'All Hours'
     const numHour = parseInt(hour)
     if (numHour === 0) return '12:00 AM'
     if (numHour < 12) return `${numHour}:00 AM`
@@ -68,13 +78,11 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   }
 
   const mapSliderToHour = (sliderValue) => {
-    if (sliderValue === '24') return 'all'
     const adjustedHour = (parseInt(sliderValue) + 6) % 24
     return adjustedHour
   }
 
   const mapHourToSlider = (hour) => {
-    if (hour === 'all') return 24
     const sliderValue = (hour - 6 + 24) % 24
     return sliderValue
   }
@@ -82,6 +90,10 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   const handleHourChange = (value) => {
     const hourValue = mapSliderToHour(value)
     handleFilterChange('hourOfDay', hourValue)
+
+    // Flash effect when hour changes
+    setHourChanging(true)
+    setTimeout(() => setHourChanging(false), 200)
   }
 
   const navStyles = {
@@ -230,7 +242,11 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    minWidth: '320px'
+    minWidth: '320px',
+    padding: '8px 12px',
+    background: '#f9fafb',
+    borderRadius: '8px',
+    border: '1px solid #d1d5db'
   }
 
   const sliderStyles = {
@@ -241,7 +257,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     outline: 'none',
     cursor: 'pointer',
     WebkitAppearance: 'none',
-    appearance: 'none'
+    appearance: 'none',
+    transition: 'all 0.2s ease'
   }
 
   // Add custom CSS for slider thumb
@@ -274,12 +291,18 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
     }
   `
 
-  const sliderLabelStyles = {
-    color: '#374151',
-    fontSize: '0.875rem',
+  const getSliderLabelStyles = (isChanging) => ({
+    fontSize: '1rem',
     textAlign: 'center',
-    fontWeight: '500'
-  }
+    fontWeight: '600',
+    padding: '4px 8px',
+    background: isChanging ? '#10b981' : '#3b82f6',
+    color: '#ffffff',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+    transform: isChanging ? 'scale(1.1)' : 'scale(1)',
+    boxShadow: isChanging ? '0 0 12px rgba(59, 130, 246, 0.5)' : 'none'
+  })
 
   return (
     <>
@@ -495,25 +518,25 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
               >
                 <span>
-                  {filters.machineType.length === 0 
-                    ? 'All Types' 
-                    : filters.machineType.length === 1 
+                  {filters.machineType.length === 0
+                    ? 'All Types'
+                    : filters.machineType.length === 1
                       ? filters.machineType[0]
                       : `${filters.machineType.length} selected`
                   }
                 </span>
-                <svg 
-                  width="16" 
-                  height="16" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                   style={{ transform: machineTypeDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              
+
               {machineTypeDropdownOpen && (
                 <div style={dropdownListStyles}>
                   {machineTypes.map(type => (
@@ -564,31 +587,33 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           </div>
 
-          {/* Occupancy Filter */}
-          <div style={filterGroupStyles}>
-            <label style={labelStyles}>Occupancy</label>
-            <div style={dropdownContainerStyles}>
-              <select
-                value={filters.occupancy}
-                onChange={(e) => handleFilterChange('occupancy', e.target.value)}
-                style={{
-                  ...selectStyles,
-                  appearance: 'none',
-                  paddingRight: '32px',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 8px center',
-                  backgroundSize: '16px'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
-                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
-              >
-                <option value="all">All</option>
-                <option value="occupied">🔴 Occupied</option>
-                <option value="vacant">⚪ Vacant</option>
-              </select>
+          {/* Occupancy Filter - REMOVED FROM UI - Keep filter logic for potential future use */}
+          {/* {viewMode === 'heatmap' && (
+            <div style={filterGroupStyles}>
+              <label style={labelStyles}>Occupancy</label>
+              <div style={dropdownContainerStyles}>
+                <select
+                  value={filters.occupancy}
+                  onChange={(e) => handleFilterChange('occupancy', e.target.value)}
+                  style={{
+                    ...selectStyles,
+                    appearance: 'none',
+                    paddingRight: '32px',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 8px center',
+                    backgroundSize: '16px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                  onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+                >
+                  <option value="all">All</option>
+                  <option value="occupied">🔴 Occupied</option>
+                  <option value="vacant">⚪ Vacant</option>
+                </select>
+              </div>
             </div>
-          </div>
+          )} */}
 
           {/* Day Filter */}
           <div style={filterGroupStyles}>
@@ -609,7 +634,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
                 onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
               >
-                <option value="all">All Days</option>
+                {viewMode !== 'heatmap' && <option value="all">All Days</option>}
                 {daysOfWeek.map(day => (
                   <option key={day} value={day}>{day.slice(0, 3)}</option>
                 ))}
@@ -617,45 +642,49 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           </div>
 
-          {/* Hour Filter - Slider */}
-          <div style={filterGroupStyles}>
-            <label style={labelStyles}>Hour</label>
-            <div style={sliderContainerStyles}>
-              <input
-                type="range"
-                min="0"
-                max="24"
-                value={mapHourToSlider(filters.hourOfDay)}
-                onChange={(e) => handleHourChange(e.target.value)}
-                style={sliderStyles}
-              />
-              <div style={sliderLabelStyles}>
-                {formatHourDisplay(filters.hourOfDay)}
+          {/* Hour Filter - Slider - Only show in Heatmap mode */}
+          {viewMode === 'heatmap' && (
+            <div style={filterGroupStyles}>
+              <label style={labelStyles}>Hour</label>
+              <div style={sliderContainerStyles}>
+                <input
+                  type="range"
+                  min="0"
+                  max="23"
+                  value={mapHourToSlider(filters.hourOfDay)}
+                  onChange={(e) => handleHourChange(e.target.value)}
+                  style={sliderStyles}
+                />
+                <div style={getSliderLabelStyles(hourChanging)}>
+                  {formatHourDisplay(filters.hourOfDay)}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Heat Map Toggle */}
-          <button
-            onClick={() => setHeatMapEnabled(!heatMapEnabled)}
-            style={{
-              ...buttonStyles,
-              background: heatMapEnabled ? '#10b981' : '#f3f4f6',
-              color: heatMapEnabled ? '#ffffff' : '#6b7280',
-              border: heatMapEnabled ? 'none' : '1px solid #d1d5db'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.opacity = '0.9'
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.opacity = '1'
-            }}
-          >
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            {heatMapEnabled ? 'Heat Map' : 'Heat Map'}
-          </button>
+          {/* Heat Map Toggle - Only show in Heatmap mode */}
+          {viewMode === 'heatmap' && (
+            <button
+              onClick={() => setHeatMapEnabled(!heatMapEnabled)}
+              style={{
+                ...buttonStyles,
+                background: heatMapEnabled ? '#10b981' : '#f3f4f6',
+                color: heatMapEnabled ? '#ffffff' : '#6b7280',
+                border: heatMapEnabled ? 'none' : '1px solid #d1d5db'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.opacity = '0.9'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.opacity = '1'
+              }}
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              {heatMapEnabled ? 'Heat Map' : 'Heat Map'}
+            </button>
+          )}
 
           {/* Bank Labels Toggle */}
           {setShowBankLabels && (

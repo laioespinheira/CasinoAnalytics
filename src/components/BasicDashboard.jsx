@@ -197,96 +197,158 @@ const BasicDashboard = () => {
   };
   return (
     <div style={{
-      background: '#f8fafc',
+      display: 'flex',
       minHeight: '100vh',
-      padding: '100px 20px 60px'
+      background: '#f8fafc',
+      paddingTop: '100px'
     }}>
+      {/* Left Sidebar */}
       <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
+        width: '240px',
+        background: 'white',
+        borderRight: '1px solid #e5e7eb',
+        padding: '2rem 0',
+        position: 'fixed',
+        left: 0,
+        top: '100px',
+        bottom: 0,
+        overflowY: 'auto'
+      }}>
+        <div style={{
+          padding: '0 1.5rem',
+          marginBottom: '2rem'
+        }}>
+          <h2 style={{
+            fontSize: '1rem',
+            fontWeight: '700',
+            margin: 0,
+            color: '#111827'
+          }}>
+            Analytics
+          </h2>
+        </div>
+
+        <nav style={{ display: 'flex', flexDirection: 'column' }}>
+          <button
+            onClick={() => setActiveTab('summary')}
+            style={{
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              background: activeTab === 'summary' ? '#f3f4f6' : 'transparent',
+              color: activeTab === 'summary' ? '#111827' : '#6b7280',
+              fontWeight: activeTab === 'summary' ? '600' : '500',
+              fontSize: '0.875rem',
+              textAlign: 'left',
+              cursor: 'pointer',
+              borderLeft: activeTab === 'summary' ? '3px solid #111827' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'summary') {
+                e.currentTarget.style.background = '#f9fafb'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'summary') {
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
+          >
+            Summary
+          </button>
+          <button
+            onClick={() => setActiveTab('dayOfWeek')}
+            style={{
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              background: activeTab === 'dayOfWeek' ? '#f3f4f6' : 'transparent',
+              color: activeTab === 'dayOfWeek' ? '#111827' : '#6b7280',
+              fontWeight: activeTab === 'dayOfWeek' ? '600' : '500',
+              fontSize: '0.875rem',
+              textAlign: 'left',
+              cursor: 'pointer',
+              borderLeft: activeTab === 'dayOfWeek' ? '3px solid #111827' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'dayOfWeek') {
+                e.currentTarget.style.background = '#f9fafb'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'dayOfWeek') {
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
+          >
+            Day of Week
+          </button>
+          <button
+            onClick={() => setActiveTab('game')}
+            style={{
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              background: activeTab === 'game' ? '#f3f4f6' : 'transparent',
+              color: activeTab === 'game' ? '#111827' : '#6b7280',
+              fontWeight: activeTab === 'game' ? '600' : '500',
+              fontSize: '0.875rem',
+              textAlign: 'left',
+              cursor: 'pointer',
+              borderLeft: activeTab === 'game' ? '3px solid #111827' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'game') {
+                e.currentTarget.style.background = '#f9fafb'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'game') {
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
+          >
+            Game
+          </button>
+          <button
+            onClick={() => setActiveTab('area')}
+            style={{
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              background: activeTab === 'area' ? '#f3f4f6' : 'transparent',
+              color: activeTab === 'area' ? '#111827' : '#6b7280',
+              fontWeight: activeTab === 'area' ? '600' : '500',
+              fontSize: '0.875rem',
+              textAlign: 'left',
+              cursor: 'pointer',
+              borderLeft: activeTab === 'area' ? '3px solid #111827' : '3px solid transparent',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'area') {
+                e.currentTarget.style.background = '#f9fafb'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'area') {
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
+          >
+            Area
+          </button>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div style={{
+        marginLeft: '240px',
+        flex: 1,
+        padding: '2rem',
         display: 'flex',
         flexDirection: 'column',
         gap: '2rem'
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          <div>
-            <h1 style={{
-              fontSize: '2rem',
-              fontWeight: '700',
-              margin: 0,
-              color: '#111827'
-            }}>
-              Casino Analytics Dashboard
-            </h1>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setActiveTab('summary')}
-              style={{
-                padding: '0.625rem 1.25rem',
-                borderRadius: '8px',
-                border: activeTab === 'summary' ? '2px solid #111827' : '2px solid #e5e7eb',
-                background: activeTab === 'summary' ? '#111827' : 'white',
-                color: activeTab === 'summary' ? 'white' : '#6b7280',
-                fontWeight: '600',
-                fontSize: '0.875rem',
-                transition: 'all 0.2s ease',
-                cursor: 'pointer'
-              }}
-            >
-              Summary
-            </button>
-            <button
-              onClick={() => setActiveTab('dayOfWeek')}
-              style={{
-                padding: '0.625rem 1.25rem',
-                borderRadius: '8px',
-                border: activeTab === 'dayOfWeek' ? '2px solid #111827' : '2px solid #e5e7eb',
-                background: activeTab === 'dayOfWeek' ? '#111827' : 'white',
-                color: activeTab === 'dayOfWeek' ? 'white' : '#6b7280',
-                fontWeight: '600',
-                fontSize: '0.875rem',
-                transition: 'all 0.2s ease',
-                cursor: 'pointer'
-              }}
-            >
-              Day of Week
-            </button>
-            <button
-              onClick={() => setActiveTab('game')}
-              style={{
-                padding: '0.625rem 1.25rem',
-                borderRadius: '8px',
-                border: activeTab === 'game' ? '2px solid #111827' : '2px solid #e5e7eb',
-                background: activeTab === 'game' ? '#111827' : 'white',
-                color: activeTab === 'game' ? 'white' : '#6b7280',
-                fontWeight: '600',
-                fontSize: '0.875rem',
-                transition: 'all 0.2s ease',
-                cursor: 'pointer'
-              }}
-            >
-              Game
-            </button>
-            <button
-              onClick={() => setActiveTab('area')}
-              style={{
-                padding: '0.625rem 1.25rem',
-                borderRadius: '8px',
-                border: activeTab === 'area' ? '2px solid #111827' : '2px solid #e5e7eb',
-                background: activeTab === 'area' ? '#111827' : 'white',
-                color: activeTab === 'area' ? 'white' : '#6b7280',
-                fontWeight: '600',
-                fontSize: '0.875rem',
-                transition: 'all 0.2s ease',
-                cursor: 'pointer'
-              }}
-            >
-              Area
-            </button>
-          </div>
-        </div>
 
         {activeTab === 'summary' && (
           <div>
