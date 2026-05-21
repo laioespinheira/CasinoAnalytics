@@ -87,7 +87,39 @@ const MachineDetailCard = ({ machineData, onClose }) => {
             letterSpacing: '0.05em',
             marginBottom: '12px'
           }}>
-            {machineData.machineType} • {machineData.gameType}
+            {machineData.machineType}
+          </div>
+
+          <div style={{
+            background: 'rgba(99, 102, 241, 0.15)',
+            border: '1px solid rgba(99, 102, 241, 0.35)',
+            borderRadius: '8px',
+            padding: '10px 12px',
+            marginBottom: '12px'
+          }}>
+            <div style={{ fontSize: '0.65rem', color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>
+              Game
+            </div>
+            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#e0e7ff', lineHeight: 1.35 }}>
+              {machineData.game_type || machineData.gameType || 'Unknown'}
+            </div>
+            {machineData.gameFamily && machineData.gameFamily !== (machineData.game_type || machineData.gameType) && (
+              <div style={{ fontSize: '0.8rem', color: '#c7d2fe', marginTop: '4px' }}>
+                Family: {machineData.gameFamily}
+              </div>
+            )}
+            {machineData.gamesAtHour && machineData.gamesAtHour.length > 1 && (
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: '6px' }}>
+                  Multiple titles this hour
+                </div>
+                {machineData.gamesAtHour.map((g) => (
+                  <div key={g.name} style={{ fontSize: '0.75rem', color: '#d1d5db', marginBottom: '4px' }}>
+                    {g.name} — ${(g.turnover || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Machine ID */}

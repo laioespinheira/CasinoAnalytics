@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
-const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, viewMode, onViewModeChange, externalFilters }) => {
+const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, labelMode, setLabelMode, labelsOutliersOnly, setLabelsOutliersOnly, showOccupancyPanel, onToggleOccupancyPanel, showGamePanel, onToggleGamePanel, viewMode, onViewModeChange, externalFilters }) => {
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: [], // Changed to array for multiple selection
@@ -290,7 +290,6 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
       border-radius: 3px;
     }
   `
-
   const getSliderLabelStyles = (isChanging) => ({
     fontSize: '1rem',
     textAlign: 'center',
@@ -662,8 +661,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           )}
 
-          {/* Heat Map Toggle - Only show in Heatmap mode */}
-          {viewMode === 'heatmap' && (
+          {/* Heat Map Toggle - Show in both Heatmap and Overall modes */}
+          {(viewMode === 'heatmap' || viewMode === 'overall') && (
             <button
               onClick={() => setHeatMapEnabled(!heatMapEnabled)}
               style={{
@@ -683,6 +682,53 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
               {heatMapEnabled ? 'Heat Map' : 'Heat Map'}
+            </button>
+          )}
+
+          {/* Occupancy Panel Toggle - Heatmap mode only */}
+          {viewMode === 'heatmap' && onToggleOccupancyPanel && (
+            <button
+              onClick={onToggleOccupancyPanel}
+              style={{
+                ...buttonStyles,
+                background: showOccupancyPanel ? '#10b981' : '#f3f4f6',
+                color: showOccupancyPanel ? '#ffffff' : '#6b7280',
+                border: showOccupancyPanel ? 'none' : '1px solid #d1d5db'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.opacity = '0.9'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.opacity = '1'
+              }}
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4V7m-9 8v-4m13 8H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2z" />
+              </svg>
+              Occupancy
+            </button>
+          )}
+
+          {viewMode === 'heatmap' && onToggleGamePanel && (
+            <button
+              onClick={onToggleGamePanel}
+              style={{
+                ...buttonStyles,
+                background: showGamePanel ? '#6366f1' : '#f3f4f6',
+                color: showGamePanel ? '#ffffff' : '#6b7280',
+                border: showGamePanel ? 'none' : '1px solid #d1d5db'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.opacity = '0.9'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.opacity = '1'
+              }}
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10M4 18h8" />
+              </svg>
+              Performance
             </button>
           )}
 
@@ -708,6 +754,53 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               </svg>
               {showBankLabels ? 'Labels' : 'Labels'}
             </button>
+          )}
+
+          {showBankLabels && setLabelMode && (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginLeft: 4 }}>
+              {[
+                { id: 'name', label: 'Name' },
+                { id: 'avg', label: 'TO/Machine' },
+                { id: 'occ', label: 'Occupancy' },
+                { id: 'form', label: 'Form' }
+              ].map(opt => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setLabelMode(opt.id)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    border: labelMode === opt.id ? '1px solid #a78bfa' : '1px solid #d1d5db',
+                    background: labelMode === opt.id ? 'rgba(167, 139, 250, 0.18)' : '#ffffff',
+                    color: labelMode === opt.id ? '#7c3aed' : '#6b7280'
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+              {setLabelsOutliersOnly && (
+                <button
+                  type="button"
+                  onClick={() => setLabelsOutliersOnly(!labelsOutliersOnly)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    border: labelsOutliersOnly ? '1px solid #f59e0b' : '1px solid #d1d5db',
+                    background: labelsOutliersOnly ? 'rgba(245, 158, 11, 0.2)' : '#ffffff',
+                    color: labelsOutliersOnly ? '#b45309' : '#6b7280'
+                  }}
+                >
+                  Outliers only
+                </button>
+              )}
+            </div>
           )}
 
           {/* Clear Button */}

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "build:data": "python scripts/build_casino_dataset.py",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

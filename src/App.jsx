@@ -1,10 +1,14 @@
-﻿import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CasinoScene from './components/CasinoScene'
 import BasicDashboard from './components/BasicDashboard'
 import GUI from './components/GUI'
 import NavigationBar from './components/NavigationBar'
 import MachineTooltip from './components/MachineTooltip'
+import MachineDetailCard from './components/MachineDetailCard'
+import BankHoverTooltip from './components/BankHoverTooltip'
+import OccupancyPanel from './components/OccupancyPanel'
+import GameMixPanel from './components/GameMixPanel'
 import ComparisonPanel from './components/ComparisonPanel'
 import FloorSummaryPanel from './components/FloorSummaryPanel'
 import useCasinoData from './hooks/useCasinoData'
@@ -34,6 +38,11 @@ function App() {
   const [specialObjectsColor, setSpecialObjectsColor] = useState('#ffffff')
   const [heatMapEnabled, setHeatMapEnabled] = useState(false)
   const [showBankLabels, setShowBankLabels] = useState(false)
+  const [labelMode, setLabelMode] = useState('name')
+  const [labelsOutliersOnly, setLabelsOutliersOnly] = useState(false)
+  const [showOccupancyPanel, setShowOccupancyPanel] = useState(false)
+  const [showGamePanel, setShowGamePanel] = useState(false)
+  const [highlightTarget, setHighlightTarget] = useState(null)
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: [], // Array for multiple selection
@@ -44,8 +53,11 @@ function App() {
   })
 
   // Interaction states
-  const [hoveredMachine, setHoveredMachine] = useState(null)
-  const [tooltipPosition, setTooltipPosition] = useState(null)
+  const [pinnedMachine, setPinnedMachine] = useState(null)
+  const [pinnedMachinePosition, setPinnedMachinePosition] = useState(null)
+  const [detailModalMachine, setDetailModalMachine] = useState(null)
+  const [hoveredBank, setHoveredBank] = useState(null)
+  const [bankTooltipPosition, setBankTooltipPosition] = useState(null)
 
   // Load casino data
   const {
@@ -54,18 +66,90 @@ function App() {
     error,
     getFilteredData,
     getHeatMapData,
-    getBankAggregates,
+    getDailyHeatMapData,
+    getBankRankings,
+    getBankTrend,
+    getZoneOccupancy,
+    getPerformanceInsights,
+    getMachineMetrics,
     getUniqueLocations,
     getMachinesByLocation
   } = useCasinoData()
+
+  const bankRankings = useMemo(() => getBankRankings(filters), [getBankRankings, filters])
+
+  const labelTrendsByKey = useMemo(() => {
+    if (!showBankLabels || labelMode !== 'form') return null
+    const map = new Map()
+    for (const key of bankRankings.keys()) {
+      map.set(key, getBankTrend(key, filters))
+    }
+    return map
+  }, [showBankLabels, labelMode, bankRankings, getBankTrend, filters])
+
+  const performanceInsights = useMemo(
+    () => getPerformanceInsights(filters.zone === 'all' ? 'All' : filters.zone, filters),
+    [getPerformanceInsights, filters]
+  )
+
+  const highlightedMachineIds = useMemo(() => {
+    if (!highlightTarget?.machineIds?.length || !heatMapEnabled || viewMode !== 'heatmap') {
+      return null
+    }
+    return new Set(highlightTarget.machineIds)
+  }, [highlightTarget, heatMapEnabled, viewMode])
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters)
   }
 
-  const handleMachineHover = (machineData, position) => {
-    setHoveredMachine(machineData)
-    setTooltipPosition(position)
+  const handleBankHover = (bankData, position) => {
+    setHoveredBank(bankData)
+    setBankTooltipPosition(position)
+  }
+
+  const handleMachineClick = (machineData, position) => {
+    if (!machineData) {
+      setPinnedMachine(null)
+      setPinnedMachinePosition(null)
+      setDetailModalMachine(null)
+      return
+    }
+
+    // Second click on the same machine -> open the detailed modal (clear pin so the small card does not stay on screen)
+    if (pinnedMachine && pinnedMachine.blender_id === machineData.blender_id) {
+      setDetailModalMachine(getMachineMetrics(machineData.blender_id, filters) || machineData)
+      setPinnedMachine(null)
+      setPinnedMachinePosition(null)
+      return
+    }
+
+    // New machine clicked -> pin its tooltip at the click position
+    setPinnedMachine(getMachineMetrics(machineData.blender_id, filters) || machineData)
+    setPinnedMachinePosition(position)
+    setDetailModalMachine(null)
+  }
+
+  const handleDetailModalClose = () => {
+    setDetailModalMachine(null)
+    setPinnedMachine(null)
+    setPinnedMachinePosition(null)
+  }
+
+  const handleToggleOccupancyPanel = () => {
+    setShowOccupancyPanel((prev) => {
+      const next = !prev
+      if (next) setShowGamePanel(false)
+      return next
+    })
+  }
+
+  const handleToggleGamePanel = () => {
+    setShowGamePanel((prev) => {
+      const next = !prev
+      if (next) setShowOccupancyPanel(false)
+      return next
+    })
   }
 
   // Auto-enable heatmap and set defaults when switching to heatmap mode
@@ -76,8 +160,25 @@ function App() {
       setFilters(prev => ({ ...prev, hourOfDay: 6, dayOfWeek: 'Monday' }))
     } else if (currentView === '3d' && viewMode !== 'heatmap') {
       setHeatMapEnabled(false)
+      setShowOccupancyPanel(false)
+      setShowGamePanel(false)
+      setHighlightTarget(null)
     }
   }, [currentView, viewMode])
+
+  useEffect(() => {
+    setHighlightTarget(null)
+  }, [
+    filters.zone,
+    filters.dayOfWeek,
+    filters.hourOfDay,
+    filters.gameType,
+    filters.machineType
+  ])
+
+  useEffect(() => {
+    if (!showGamePanel) setHighlightTarget(null)
+  }, [showGamePanel])
 
   // Keyboard navigation for hour filter in heatmap mode
   useEffect(() => {
@@ -124,7 +225,8 @@ function App() {
       change: 18.2
     },
     worstZone: {
-      name: 'Zone F',
+      // LEGACY: 'Zone F' (before D/E/F were merged into "Zone DD")
+      name: 'Zone DD',
       change: -4.3
     }
   }
@@ -143,6 +245,10 @@ function App() {
             setHeatMapEnabled={setHeatMapEnabled}
             showBankLabels={showBankLabels}
             setShowBankLabels={setShowBankLabels}
+            labelMode={labelMode}
+            setLabelMode={setLabelMode}
+            labelsOutliersOnly={labelsOutliersOnly}
+            setLabelsOutliersOnly={setLabelsOutliersOnly}
           />
           <BasicDashboard />
         </div>
@@ -157,6 +263,14 @@ function App() {
             setHeatMapEnabled={setHeatMapEnabled}
             showBankLabels={showBankLabels}
             setShowBankLabels={setShowBankLabels}
+            labelMode={labelMode}
+            setLabelMode={setLabelMode}
+            labelsOutliersOnly={labelsOutliersOnly}
+            setLabelsOutliersOnly={setLabelsOutliersOnly}
+            showOccupancyPanel={showOccupancyPanel}
+            onToggleOccupancyPanel={handleToggleOccupancyPanel}
+            showGamePanel={showGamePanel}
+            onToggleGamePanel={handleToggleGamePanel}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             externalFilters={filters}
@@ -194,23 +308,58 @@ function App() {
                 filters={filters}
                 getFilteredData={getFilteredData}
                 getHeatMapData={getHeatMapData}
+                getDailyHeatMapData={getDailyHeatMapData}
                 heatMapEnabled={heatMapEnabled}
+                viewMode={viewMode}
                 tableColor={tableColor}
                 etgColor={etgColor}
                 specialObjectsColor={specialObjectsColor}
-                onMachineHover={handleMachineHover}
+                onBankHover={handleBankHover}
+                onMachineClick={handleMachineClick}
                 getUniqueLocations={getUniqueLocations}
                 getMachinesByLocation={getMachinesByLocation}
+                getMachineMetrics={getMachineMetrics}
                 showBankLabels={showBankLabels}
+                pinned={Boolean(pinnedMachine)}
+                bankRankings={bankRankings}
+                labelMode={labelMode}
+                labelsOutliersOnly={labelsOutliersOnly}
+                labelTrendsByKey={labelTrendsByKey}
+                highlightedMachineIds={highlightedMachineIds}
               />
             </Canvas>
           </div>
 
-          {/* Machine Tooltip */}
-          {hoveredMachine && tooltipPosition && (
+          {/* Pinned machine tooltip (first click) */}
+          {pinnedMachine && pinnedMachinePosition && (
             <MachineTooltip
-              position={tooltipPosition}
-              machineData={hoveredMachine}
+              position={pinnedMachinePosition}
+              machineData={pinnedMachine}
+              metricNote={
+                viewMode === 'heatmap' && heatMapEnabled
+                  ? 'Turnover matches heat map (this hour, all games summed)'
+                  : viewMode === 'overall' && heatMapEnabled
+                    ? 'Turnover matches heat map (full day sum)'
+                    : null
+              }
+            />
+          )}
+
+          {/* Bank hover tooltip - cursor-tracking, or docked top-right while a machine is pinned. */}
+          {hoveredBank && (bankTooltipPosition || pinnedMachine) && (
+            <BankHoverTooltip
+              position={bankTooltipPosition}
+              bankUserData={hoveredBank}
+              ranking={bankRankings}
+              pinned={Boolean(pinnedMachine)}
+            />
+          )}
+
+          {/* Drill-down modal (second click on the same machine) */}
+          {detailModalMachine && (
+            <MachineDetailCard
+              machineData={detailModalMachine}
+              onClose={handleDetailModalClose}
             />
           )}
 
@@ -230,6 +379,27 @@ function App() {
                 comparisonPeriod={comparisonPeriod}
               />
             </>
+          )}
+
+          {/* Heatmap Occupancy Panel */}
+          {viewMode === 'heatmap' && showOccupancyPanel && (
+            <OccupancyPanel
+              zone={filters.zone === 'all' ? 'All zones' : filters.zone}
+              hour={filters.hourOfDay}
+              day={filters.dayOfWeek}
+              data={getZoneOccupancy(filters.zone === 'all' ? 'all' : filters.zone, filters)}
+            />
+          )}
+
+          {viewMode === 'heatmap' && showGamePanel && (
+            <GameMixPanel
+              zone={filters.zone === 'all' ? 'All zones' : filters.zone}
+              hour={filters.hourOfDay}
+              day={filters.dayOfWeek}
+              insights={performanceInsights}
+              highlightTarget={highlightTarget}
+              onHighlightChange={setHighlightTarget}
+            />
           )}
 
           <GUI

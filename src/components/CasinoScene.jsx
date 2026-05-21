@@ -12,15 +12,25 @@ const CasinoScene = ({
   filters,
   getFilteredData,
   getHeatMapData,
+  getDailyHeatMapData,
   transparencyEnabled,
   heatMapEnabled,
+  viewMode,
   tableColor,
   etgColor,
   specialObjectsColor,
-  onMachineHover,
+  onBankHover,
+  onMachineClick,
   getUniqueLocations,
   getMachinesByLocation,
-  showBankLabels
+  getMachineMetrics,
+  showBankLabels,
+  pinned,
+  bankRankings,
+  labelMode,
+  labelsOutliersOnly,
+  labelTrendsByKey,
+  highlightedMachineIds
 }) => {
   const { camera } = useThree()
   const controlsRef = useRef()
@@ -58,15 +68,25 @@ const CasinoScene = ({
         filters={filters}
         getFilteredData={getFilteredData}
         getHeatMapData={getHeatMapData}
+        getDailyHeatMapData={getDailyHeatMapData}
         enableTransparencyEffect={transparencyEnabled}
         heatMapEnabled={heatMapEnabled}
+        viewMode={viewMode}
         tableColor={tableColor}
         etgColor={etgColor}
         specialObjectsColor={specialObjectsColor}
-        onMachineHover={onMachineHover}
+        onBankHover={onBankHover}
+        onMachineClick={onMachineClick}
         getUniqueLocations={getUniqueLocations}
         getMachinesByLocation={getMachinesByLocation}
+        getMachineMetrics={getMachineMetrics}
         showBankLabels={showBankLabels}
+        pinned={pinned}
+        bankRankings={bankRankings}
+        labelMode={labelMode}
+        labelsOutliersOnly={labelsOutliersOnly}
+        labelTrendsByKey={labelTrendsByKey}
+        highlightedMachineIds={highlightedMachineIds}
       />
     </>
   )
