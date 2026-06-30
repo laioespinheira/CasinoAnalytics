@@ -135,7 +135,7 @@ const MachineTooltip = ({ position, machineData, metricNote }) => {
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        {machineData.day} • {machineData.hour} • {machineData.occupancy === 1 ? '🟢 Active' : '⚪ Idle'}
+        {(machineData.weekday || machineData.day)} • {machineData.hour} • {machineData.occupancy == null ? '— occupancy' : `${Math.round(machineData.occupancy * 100)}% occupied`}
       </div>
 
       {metricNote && (

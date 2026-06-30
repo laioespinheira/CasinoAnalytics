@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 
-const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, labelMode, setLabelMode, labelsOutliersOnly, setLabelsOutliersOnly, showOccupancyPanel, onToggleOccupancyPanel, showGamePanel, onToggleGamePanel, viewMode, onViewModeChange, externalFilters }) => {
+const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, labelMode, setLabelMode, labelsOutliersOnly, setLabelsOutliersOnly, showInsightPanel, onToggleInsightPanel, showCustomerDemandPanel, onToggleCustomerDemandPanel, selectedTier, onTierChange, tierOptions = [], viewMode, onViewModeChange, externalFilters }) => {
   const [filters, setFilters] = useState({
     zone: 'all',
     machineType: [], // Changed to array for multiple selection
     gameType: 'all',
     occupancy: 'vacant',
     dayOfWeek: 'all',
-    hourOfDay: 'all' // Will be converted to number for slider
+    hourOfDay: 'all', // Will be converted to number for slider
+    weekEnding: 'all'
   })
 
   const [machineTypeDropdownOpen, setMachineTypeDropdownOpen] = useState(false)
@@ -17,6 +18,14 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   const [machineTypes, setMachineTypes] = useState([])
   const [gameTypes, setGameTypes] = useState([])
   const [daysOfWeek] = useState(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+
+  // Unique week-ending dates from the dataset (DD rows only; non-DD have null), newest first.
+  const weekEndings = useMemo(() => {
+    if (!casinoData) return []
+    const set = new Set()
+    casinoData.forEach(r => { if (r.week_ending) set.add(r.week_ending) })
+    return Array.from(set).sort().reverse()
+  }, [casinoData])
 
   // Sync with external filters (from App.jsx arrow key changes)
   useEffect(() => {
@@ -586,6 +595,35 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           </div>
 
+          {/* Customer Tier Filter - Heatmap mode only (Customer Demand lens) */}
+          {viewMode === 'heatmap' && onTierChange && (
+            <div style={filterGroupStyles}>
+              <label style={labelStyles}>Customer Tier</label>
+              <div style={dropdownContainerStyles}>
+                <select
+                  value={selectedTier || 'all'}
+                  onChange={(e) => onTierChange(e.target.value)}
+                  style={{
+                    ...selectStyles,
+                    appearance: 'none',
+                    paddingRight: '32px',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 8px center',
+                    backgroundSize: '16px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                  onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+                >
+                  <option value="all">All Tiers</option>
+                  {tierOptions.map(t => (
+                    <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
           {/* Occupancy Filter - REMOVED FROM UI - Keep filter logic for potential future use */}
           {/* {viewMode === 'heatmap' && (
             <div style={filterGroupStyles}>
@@ -613,6 +651,33 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               </div>
             </div>
           )} */}
+
+          {/* Week Ending Filter */}
+          <div style={filterGroupStyles}>
+            <label style={labelStyles}>Week Ending</label>
+            <div style={dropdownContainerStyles}>
+              <select
+                value={typeof filters.weekEnding === 'string' ? filters.weekEnding : 'all'}
+                onChange={(e) => handleFilterChange('weekEnding', e.target.value)}
+                style={{
+                  ...selectStyles,
+                  appearance: 'none',
+                  paddingRight: '32px',
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' stroke='%236b7280' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 8px center',
+                  backgroundSize: '16px'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                onMouseLeave={(e) => e.target.style.background = '#f9fafb'}
+              >
+                <option value="all">All Weeks</option>
+                {weekEndings.map(w => (
+                  <option key={w} value={w}>{w}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           {/* Day Filter */}
           <div style={filterGroupStyles}>
@@ -685,15 +750,15 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           )}
 
-          {/* Occupancy Panel Toggle - Heatmap mode only */}
-          {viewMode === 'heatmap' && onToggleOccupancyPanel && (
+          {/* Combined Insights Panel Toggle - Heatmap mode only */}
+          {viewMode === 'heatmap' && onToggleInsightPanel && (
             <button
-              onClick={onToggleOccupancyPanel}
+              onClick={onToggleInsightPanel}
               style={{
                 ...buttonStyles,
-                background: showOccupancyPanel ? '#10b981' : '#f3f4f6',
-                color: showOccupancyPanel ? '#ffffff' : '#6b7280',
-                border: showOccupancyPanel ? 'none' : '1px solid #d1d5db'
+                background: showInsightPanel ? '#6366f1' : '#f3f4f6',
+                color: showInsightPanel ? '#ffffff' : '#6b7280',
+                border: showInsightPanel ? 'none' : '1px solid #d1d5db'
               }}
               onMouseEnter={(e) => {
                 e.target.style.opacity = '0.9'
@@ -705,18 +770,19 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4V7m-9 8v-4m13 8H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2z" />
               </svg>
-              Occupancy
+              Insights
             </button>
           )}
 
-          {viewMode === 'heatmap' && onToggleGamePanel && (
+          {/* Customer Demand Panel Toggle - Heatmap mode only */}
+          {viewMode === 'heatmap' && onToggleCustomerDemandPanel && (
             <button
-              onClick={onToggleGamePanel}
+              onClick={onToggleCustomerDemandPanel}
               style={{
                 ...buttonStyles,
-                background: showGamePanel ? '#6366f1' : '#f3f4f6',
-                color: showGamePanel ? '#ffffff' : '#6b7280',
-                border: showGamePanel ? 'none' : '1px solid #d1d5db'
+                background: showCustomerDemandPanel ? '#0ea5e9' : '#f3f4f6',
+                color: showCustomerDemandPanel ? '#ffffff' : '#6b7280',
+                border: showCustomerDemandPanel ? 'none' : '1px solid #d1d5db'
               }}
               onMouseEnter={(e) => {
                 e.target.style.opacity = '0.9'
@@ -726,9 +792,9 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               }}
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10M4 18h8" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-3.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a3 3 0 10-2.83-4" />
               </svg>
-              Performance
+              Customer Demand
             </button>
           )}
 
@@ -761,8 +827,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               {[
                 { id: 'name', label: 'Name' },
                 { id: 'avg', label: 'TO/Machine' },
-                { id: 'occ', label: 'Occupancy' },
-                { id: 'form', label: 'Form' }
+                { id: 'occ', label: 'Occupancy' }
               ].map(opt => (
                 <button
                   key={opt.id}
@@ -812,7 +877,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 gameType: 'all',
                 occupancy: 'all',
                 dayOfWeek: 'all',
-                hourOfDay: 'all'
+                hourOfDay: 'all',
+                weekEnding: 'all'
               }
               setFilters(defaultFilters)
               onFilterChange(defaultFilters)

@@ -1,14 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { parseGameFamily, buildTwoWordFamilyIndex } from '../utils/gameFamilies'
 
-const TREND_BUCKETS = [
-  { label: '00-04', start: 0, end: 4 },
-  { label: '04-08', start: 4, end: 8 },
-  { label: '08-12', start: 8, end: 12 },
-  { label: '12-16', start: 12, end: 16 },
-  { label: '16-20', start: 16, end: 20 },
-  { label: '20-24', start: 20, end: 24 }
-]
+// Data-derived: 85% knee in peak-hour occupancy distribution (Fri/Sat 19-23, Sun 13-16).
+// 22.7% of peak DD machine-hours run >= 0.85 - these are the demand-constrained slots.
+export const OCCUPANCY_THRESHOLD = 0.85
 
 const getBankKey = (row) => (
   row.machineType === 'Tables'
@@ -21,7 +16,7 @@ const bankLabelFromRow = (row) => (
 )
 
 const buildOccupancyDrivers = (rows, familyIndex) => {
-  const occupiedRows = rows.filter((r) => r.occupancy === 1)
+  const occupiedRows = rows.filter((r) => r.occupancy != null && r.occupancy >= OCCUPANCY_THRESHOLD)
   const occupiedMachines = new Map()
 
   occupiedRows.forEach((r) => {
@@ -66,12 +61,6 @@ const buildOccupancyDrivers = (rows, familyIndex) => {
   return { topBanks, topGames, totalOccupied }
 }
 
-const parseHour = (value) => {
-  if (typeof value === 'number') return value
-  const parsed = parseInt(String(value || '').split(':')[0], 10)
-  return Number.isNaN(parsed) ? null : parsed
-}
-
 // 5-tier heat level (used by heat map helpers)
 const getHeatLevel = (turnover, percentiles) => {
   if (turnover === 0) return 0
@@ -104,16 +93,26 @@ const useCasinoData = () => {
           throw new Error('Failed to fetch casino data (run npm run build:data)')
         }
 
-        const data = await response.json()
+        const cols = await response.json()
         const MERGED_ZONES = new Set(['Zone D', 'Zone E', 'Zone F'])
 
-        const normalized = data.map((obj) => {
-          const row = { ...obj }
+        // The dataset is column-oriented ({ field: [...values] }). Reshape into
+        // an array of row objects, one per index, preserving every field.
+        const keys = Object.keys(cols)
+        const n = keys.length > 0 && Array.isArray(cols[keys[0]]) ? cols[keys[0]].length : 0
+
+        const normalized = new Array(n)
+        for (let i = 0; i < n; i++) {
+          const row = {}
+          for (let k = 0; k < keys.length; k++) {
+            const key = keys[k]
+            row[key] = cols[key][i]
+          }
           if (MERGED_ZONES.has(row.zone)) row.zone = 'Zone DD'
           row.turnover = parseFloat(row.turnover) || 0
           row.stroke = parseFloat(row.stroke) || 0
-          return row
-        })
+          normalized[i] = row
+        }
 
         setCasinoData(normalized)
       } catch (err) {
@@ -138,7 +137,8 @@ const useCasinoData = () => {
       gt: filters.gameType ?? 'all',
       day: filters.dayOfWeek ?? 'all',
       hour: filters.hourOfDay,
-      occ: filters.occupancy ?? 'all'
+      occ: filters.occupancy ?? 'all',
+      we: filters.weekEnding ?? 'all'
     })
     const cache = filterCacheRef.current
     if (cache.has(key)) return cache.get(key)
@@ -149,39 +149,28 @@ const useCasinoData = () => {
         filters.machineType.length === 0 ||
         filters.machineType.includes(item.machineType)
       const gameTypeMatch = filters.gameType === 'all' || item.game_type === filters.gameType
-      const dayOfWeekMatch = filters.dayOfWeek === 'all' || item.day === filters.dayOfWeek
+      const dayOfWeekMatch = filters.dayOfWeek === 'all' || item.weekday === filters.dayOfWeek
+      // A specific week-ending naturally excludes non-DD rows (their week_ending is null).
+      const weekEndingMatch = !filters.weekEnding ||
+        filters.weekEnding === 'all' ||
+        item.week_ending === filters.weekEnding
       const hourOfDayMatch = filters.hourOfDay === 'all' ||
         item.hour === filters.hourOfDay ||
         item.hour === `${filters.hourOfDay}:00` ||
         item.hour === filters.hourOfDay.toString()
 
-      return zoneMatch && machineTypeMatch && gameTypeMatch && dayOfWeekMatch && hourOfDayMatch
+      return zoneMatch && machineTypeMatch && gameTypeMatch && dayOfWeekMatch && weekEndingMatch && hourOfDayMatch
     })
 
-    const machineTotals = new Map()
-    baseFilteredData.forEach((item) => {
-      const id = item.blender_id
-      if (!id) return
-      machineTotals.set(id, (machineTotals.get(id) || 0) + (item.turnover || 0))
-    })
-    const positiveTotals = [...machineTotals.values()].filter((t) => t > 0).sort((a, b) => a - b)
-    const p25Machine = positiveTotals.length > 0
-      ? positiveTotals[Math.floor(positiveTotals.length * 0.25)] || 0
-      : 0
-    const occupiedByBlender = new Map()
-    machineTotals.forEach((total, id) => {
-      occupiedByBlender.set(id, total >= p25Machine && total > 0)
-    })
-
-    const dataWithOccupancy = baseFilteredData.map(item => ({
-      ...item,
-      occupancy: occupiedByBlender.get(item.blender_id) ? 1 : 0,
-      occupancyStatus: occupiedByBlender.get(item.blender_id) ? 'occupied' : 'vacant'
-    }))
-
-    const result = filters.occupancy !== 'all'
-      ? dataWithOccupancy.filter(item => item.occupancyStatus === filters.occupancy)
-      : dataWithOccupancy
+    // Occupancy is the measured field (fraction in [0,1]); non-DD rows have null
+    // occupancy and are dropped whenever a specific occupancy filter is applied.
+    const result = filters.occupancy && filters.occupancy !== 'all'
+      ? baseFilteredData.filter(item => {
+          if (item.occupancy == null) return false
+          const occupied = item.occupancy >= OCCUPANCY_THRESHOLD
+          return filters.occupancy === 'occupied' ? occupied : !occupied
+        })
+      : baseFilteredData
 
     if (cache.size > 16) cache.delete(cache.keys().next().value)
     cache.set(key, result)
@@ -284,7 +273,7 @@ const useCasinoData = () => {
   }, [getFilteredData, aggregateRowsByBlenderId])
 
   const getZoneAggregates = useCallback((filters) => {
-    const filteredData = getFilteredData(filters)
+    const filteredData = getFilteredData(filters).filter(r => r.date != null)
     const zoneMap = new Map()
 
     filteredData.forEach(item => {
@@ -320,7 +309,7 @@ const useCasinoData = () => {
   }, [getFilteredData])
 
   const getBankAggregates = useCallback((filters, zoneFilter = null) => {
-    let filteredData = getFilteredData(filters)
+    let filteredData = getFilteredData(filters).filter(r => r.date != null)
 
     if (zoneFilter) {
       filteredData = filteredData.filter(item => item.zone === zoneFilter)
@@ -378,7 +367,7 @@ const useCasinoData = () => {
   }, [getBankAggregates])
 
   const getBankRankings = useCallback((filters) => {
-    const rows = getFilteredData({ ...filters, occupancy: 'all' })
+    const rows = getFilteredData({ ...filters, occupancy: 'all' }).filter(r => r.date != null)
     const bankMap = new Map()
 
     rows.forEach(row => {
@@ -393,16 +382,20 @@ const useCasinoData = () => {
           machines: new Set(),
           turnover: 0,
           stroke: 0,
-          occupiedRows: 0,
-          totalRows: 0
+          occSum: 0,
+          occCount: 0
         })
       }
       const bank = bankMap.get(key)
       bank.machines.add(row.blender_id)
       bank.turnover += row.turnover
       bank.stroke += row.stroke || 0
-      bank.totalRows += 1
-      if (row.turnover > 0) bank.occupiedRows += 1
+      // Real fill rate: mean of measured occupancy fractions, matching the
+      // Occupancy panel headline (not "share of machine-hours with any turnover").
+      if (row.occupancy != null) {
+        bank.occSum += row.occupancy
+        bank.occCount += 1
+      }
     })
 
     const banks = Array.from(bankMap.values()).map(bank => ({
@@ -414,7 +407,7 @@ const useCasinoData = () => {
       turnover: bank.turnover,
       stroke: bank.stroke,
       avgTurnover: bank.machines.size > 0 ? bank.turnover / bank.machines.size : 0,
-      occupancyPct: bank.totalRows > 0 ? (bank.occupiedRows / bank.totalRows) * 100 : 0
+      occupancyPct: bank.occCount > 0 ? (bank.occSum / bank.occCount) * 100 : 0
     }))
 
     const byZone = new Map()
@@ -447,85 +440,48 @@ const useCasinoData = () => {
     return rankings
   }, [getFilteredData])
 
-  const getBankTrend = useCallback((bankKey, filters) => {
-    const rows = getFilteredData({ ...filters, hourOfDay: 'all', occupancy: 'all' })
-      .filter(row => getBankKey(row) === bankKey)
-
-    const buckets = TREND_BUCKETS.map(bucket => ({
-      label: bucket.label,
-      total: 0,
-      machines: new Set()
-    }))
-
-    rows.forEach(row => {
-      const hour = parseHour(row.hour)
-      if (hour === null) return
-
-      const index = TREND_BUCKETS.findIndex(bucket => (
-        hour >= bucket.start && hour < bucket.end
-      ))
-      if (index === -1) return
-
-      buckets[index].total += row.turnover
-      buckets[index].machines.add(row.blender_id)
-    })
-
-    const values = buckets.map(bucket => ({
-      label: bucket.label,
-      avgTurnover: bucket.machines.size > 0 ? bucket.total / bucket.machines.size : 0,
-      machineCount: bucket.machines.size
-    }))
-
-    const nonZero = values
-      .filter(value => value.avgTurnover > 0)
-      .map(value => value.avgTurnover)
-
-    if (nonZero.length === 0) {
-      return values.map(value => ({ ...value, tier: 'empty' }))
-    }
-
-    const min = Math.min(...nonZero)
-    const max = Math.max(...nonZero)
-    const span = max - min || 1
-
-    return values.map(value => {
-      if (value.avgTurnover === 0) return { ...value, tier: 'empty' }
-      const relative = (value.avgTurnover - min) / span
-      return {
-        ...value,
-        tier: relative < 0.33 ? 'low' : relative < 0.67 ? 'mid' : 'high'
-      }
-    })
-  }, [getFilteredData])
-
   const getZoneOccupancy = useCallback((zone, filters) => {
-    const rows = zone === 'all' || zone === 'All zones'
+    const rows = (zone === 'all' || zone === 'All zones'
       ? getFilteredData({ ...filters, occupancy: 'all' })
       : getFilteredData({ ...filters, zone, occupancy: 'all' })
-    const machineOccupancy = new Map()
+    ).filter(r => r.date != null)
+    // Headline: mean of actual occupancy fractions across the filtered DD rows.
+    const validOccupancy = rows.filter(r => r.occupancy != null).map(r => r.occupancy)
+    const avgOccupancy = validOccupancy.length
+      ? validOccupancy.reduce((s, x) => s + x, 0) / validOccupancy.length
+      : null
+
+    // Per-machine mean occupancy (for distinct counts + the saturation stat).
+    const machineMean = (m) => (m && m.n ? m.sum / m.n : null)
+    const machineAgg = new Map() // id -> { sum, n }
     rows.forEach(row => {
       const id = row.blender_id
       if (id == null || id === '') return
-      if (!machineOccupancy.has(id)) {
-        machineOccupancy.set(id, row.occupancy)
-      }
+      const m = machineAgg.get(id) || { sum: 0, n: 0 }
+      if (row.occupancy != null) { m.sum += row.occupancy; m.n += 1 }
+      machineAgg.set(id, m)
     })
-    const totalMachines = machineOccupancy.size
-    const occupiedMachines = [...machineOccupancy.values()].filter((o) => o === 1).length
-    const groups = new Map()
+    const totalMachines = machineAgg.size
+    const saturatedMachines = [...machineAgg.values()]
+      .filter(m => { const v = machineMean(m); return v != null && v >= OCCUPANCY_THRESHOLD })
+      .length
 
+    // Per (bank, machineType): distinct machines + mean of their machine-means.
+    const groups = new Map()
     rows.forEach(row => {
+      const id = row.blender_id
+      if (id == null || id === '') return
       const machineType = row.machineType || 'Unknown'
       const bank = row.location || row.zone || 'Unknown'
       const gkey = `${bank}__${machineType}`
 
       if (!groups.has(gkey)) {
-        groups.set(gkey, { bank, machineType, total: 0, occupied: 0 })
+        groups.set(gkey, { bank, machineType, machines: new Map() })
       }
-
       const group = groups.get(gkey)
-      group.total++
-      if (row.turnover > 0) group.occupied++
+      const rec = group.machines.get(id) || { sum: 0, n: 0 }
+      if (row.occupancy != null) { rec.sum += row.occupancy; rec.n += 1 }
+      group.machines.set(id, rec)
     })
 
     const occupancyDrivers = buildOccupancyDrivers(rows, familyIndex)
@@ -533,14 +489,23 @@ const useCasinoData = () => {
     return {
       zone,
       totalMachines,
-      occupiedMachines,
-      pct: totalMachines > 0 ? (occupiedMachines / totalMachines) * 100 : 0,
+      saturatedMachines,
+      occupiedMachines: saturatedMachines,
+      avgOccupancy,
+      pct: avgOccupancy != null ? avgOccupancy * 100 : 0,
       occupancyDrivers,
       byBreakdown: Array.from(groups.values())
-        .map(group => ({
-          ...group,
-          pct: group.total > 0 ? (group.occupied / group.total) * 100 : 0
-        }))
+        .map(group => {
+          const means = [...group.machines.values()].map(machineMean).filter(v => v != null)
+          const avg = means.length ? means.reduce((s, x) => s + x, 0) / means.length : null
+          return {
+            bank: group.bank,
+            machineType: group.machineType,
+            total: group.machines.size,
+            avgOccupancy: avg,
+            pct: avg != null ? avg * 100 : 0
+          }
+        })
         .sort((a, b) => {
           if (a.bank !== b.bank) return a.bank.localeCompare(b.bank)
           return a.machineType.localeCompare(b.machineType)
@@ -551,18 +516,29 @@ const useCasinoData = () => {
   const getMachineMetrics = useCallback((blenderId, filters) => {
     const catalog = casinoData.find((r) => r.blender_id === blenderId)
     const rows = getFilteredData({ ...filters, occupancy: 'all' })
-      .filter((r) => r.blender_id === blenderId)
+      .filter((r) => r.date != null && r.blender_id === blenderId)
     if (!catalog) return null
     const primaryFromCatalog = catalog.game_type || 'Unknown'
 
+    // No rows in the current filter: return a truthy sentinel rather than a
+    // stale catalog/row[0] representative. Truthy so the `|| fallback` guards in
+    // App.handleMachineClick / CasinoModel don't substitute stale data. Carries
+    // the active filters because the detail card has no `filters` prop.
     if (!rows.length) {
       return {
-        ...catalog,
-        turnover: 0,
-        stroke: 0,
+        noData: true,
+        blender_id: blenderId,
+        machineFullName: catalog.machineFullName,
+        location: catalog.location,
+        zone: catalog.zone,
+        machineType: catalog.machineType,
         game_type: primaryFromCatalog,
         gameType: primaryFromCatalog,
-        gameFamily: parseGameFamily(primaryFromCatalog, familyIndex)
+        activeFilters: {
+          weekEnding: filters?.weekEnding ?? 'all',
+          dayOfWeek: filters?.dayOfWeek ?? 'all',
+          hourOfDay: filters?.hourOfDay ?? 'all'
+        }
       }
     }
 
@@ -593,9 +569,10 @@ const useCasinoData = () => {
 
   const getZoneGameMix = useCallback((zone, filters) => {
     const base = { ...filters, occupancy: 'all' }
-    const rows = zone && zone !== 'All'
+    const rows = (zone && zone !== 'All'
       ? getFilteredData({ ...base, zone })
       : getFilteredData(base)
+    ).filter(r => r.date != null)
 
     const gameMap = new Map()
     const machinesByGame = new Map()
@@ -641,9 +618,10 @@ const useCasinoData = () => {
   const getPerformanceInsights = useCallback((zone, filters) => {
     const base = { ...filters, occupancy: 'all' }
     const zoneFilter = zone && zone !== 'All' && zone !== 'All zones' ? zone : null
-    const rows = zoneFilter
+    const rows = (zoneFilter
       ? getFilteredData({ ...base, zone: zoneFilter })
       : getFilteredData(base)
+    ).filter(r => r.date != null)
 
     let totalTurnover = 0
     const bankMap = new Map()
@@ -696,7 +674,7 @@ const useCasinoData = () => {
     })
 
     const totalMachines = machineOccupancy.size
-    const occupiedCount = [...machineOccupancy.values()].filter((o) => o === 1).length
+    const occupiedCount = [...machineOccupancy.values()].filter((o) => o != null && o >= OCCUPANCY_THRESHOLD).length
     const zoneOccupancyPct = totalMachines > 0 ? (occupiedCount / totalMachines) * 100 : 0
 
     const rankings = getBankRankings(filters)
@@ -709,7 +687,11 @@ const useCasinoData = () => {
           label: bank.label,
           turnover: bank.turnover,
           pct: totalTurnover > 0 ? (bank.turnover / totalTurnover) * 100 : 0,
-          occupancyPct: bank.totalRows > 0 ? (bank.occupiedRows / bank.totalRows) * 100 : 0,
+          // Mean occupancy fill rate (matches getBankRankings / Occupancy panel).
+          // Falls back to the old machine-hours-with-turnover share only if the
+          // ranking entry is unavailable.
+          occupancyPct: rankEntry?.occupancyPct
+            ?? (bank.totalRows > 0 ? (bank.occupiedRows / bank.totalRows) * 100 : 0),
           machineCount,
           machineIds: [...bank.machines],
           avgTurnover: machineCount > 0 ? bank.turnover / machineCount : 0,
@@ -858,7 +840,6 @@ const useCasinoData = () => {
     getBankAggregates,
     getDDBankRanking,
     getBankRankings,
-    getBankTrend,
     getZoneOccupancy,
     getZoneGameMix,
     getPerformanceInsights,

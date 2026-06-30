@@ -1,0 +1,20 @@
+# Large source data NOT used by the web app at runtime.
+# The frontend only fetches casino_data.json, customer_tier_data.json and the .glb model.
+*.parquet
+*.bak
+public/assets/casino_data.csv
+public/assets/casino_data_old.csv
+public/assets/index_casino_data.csv
+public/assets/index_casino_data(backup).csv
+public/models/archive/
+
+# Tooling / source not needed for the static Vite build
+scripts/
+*.ipynb
+.ipynb_checkpoints/
+docs/
+photos/
+public/*.png
+
+# Build artifacts (Vercel rebuilds from source)
+dist/

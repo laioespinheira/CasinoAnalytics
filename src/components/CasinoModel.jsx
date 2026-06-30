@@ -1,8 +1,25 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { useLoader, useThree, useFrame } from '@react-three/fiber'
+import { Html } from '@react-three/drei'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as THREE from 'three'
 import BankLabel from './BankLabel'
+
+// Pale gray for DD machines that have data somewhere in the dataset but no rows
+// in the current filter. Clearly distinct from the dark non-DD MUTED_GRAY and
+// from the white-ish floor/walls, so "swapped/off this week" reads differently
+// from "averaged" and from "live data".
+const NO_DATA_GRAY = '#9ca3af'
+
+// 5-tier bucketing mirroring the hook's getHeatLevel, but applied to whatever
+// metric (here: per-machine MEAN turnover) with bounds recomputed over that metric.
+const getHeatLevel = (value, percentiles) => {
+  if (value <= 0) return 0
+  if (value <= percentiles.p25) return 1
+  if (value <= percentiles.p75) return 2
+  if (value <= percentiles.p90) return 3
+  return 4
+}
 
 // Label culling tunables.
 // Labels are drei <Html> portals that reproject every frame. Limiting how
@@ -31,8 +48,7 @@ const BankLabelLayer = ({
   labels,
   bankRankings,
   labelMode,
-  labelsOutliersOnly,
-  labelTrendsByKey
+  labelsOutliersOnly
 }) => {
   const { camera } = useThree()
   const [visibleKeys, setVisibleKeys] = useState(() => new Set())
@@ -75,7 +91,6 @@ const BankLabelLayer = ({
       {visibleLabels.map(label => {
         const entry = rankings.get(label.key)
         const tier = rankTierFromEntry(entry)
-        const trend = labelTrendsByKey?.get(label.key) ?? []
         return (
           <BankLabel
             key={label.key}
@@ -87,7 +102,6 @@ const BankLabelLayer = ({
             mode={labelMode}
             avgTurnover={entry?.avgTurnover ?? 0}
             occupancyPct={entry?.occupancyPct ?? 0}
-            trend={trend}
           />
         )
       })}
@@ -123,7 +137,6 @@ const CasinoModel = ({
   bankRankings,
   labelMode = 'name',
   labelsOutliersOnly = false,
-  labelTrendsByKey = null,
   highlightedMachineIds = null
 }) => {
   const gltf = useLoader(GLTFLoader, './models/casino_floor_map.glb')
@@ -135,6 +148,7 @@ const CasinoModel = ({
   const [originalMaterials, setOriginalMaterials] = useState(new Map())
   const [bankBoundingBoxes, setBankBoundingBoxes] = useState(new Map())
   const [bankLabels, setBankLabels] = useState([])
+  const [nonDdInfo, setNonDdInfo] = useState(null)
   const lastHoveredBankKeyRef = useRef(null)
 
   // Cache casino data lookup for performance
@@ -146,6 +160,16 @@ const CasinoModel = ({
       }
     })
     return map
+  }, [casinoData])
+
+  // Machines that have at least one DD row (date != null). Machines absent from
+  // this set are non-DD (averaged-only) and are not interactive.
+  const ddMachineIds = useMemo(() => {
+    const set = new Set()
+    casinoData.forEach(item => {
+      if (item.blender_id && item.date != null) set.add(item.blender_id)
+    })
+    return set
   }, [casinoData])
 
   // Calculate bank (location) bounding boxes for hierarchical interaction
@@ -188,7 +212,9 @@ const CasinoModel = ({
           ? groupRef.current.worldToLocal(center.clone())
           : center.clone()
         boxMesh.position.copy(localCenter)
-        boxMesh.userData = { type: 'bank', zone, location, key, isTableZone }
+        // Non-DD bank: none of its machines have DD coverage (no date != null rows).
+        const isNonDd = !bankMachines.some(m => ddMachineIds.has(m.blender_id))
+        boxMesh.userData = { type: 'bank', zone, location, key, isTableZone, isNonDd }
 
         boundingBoxMap.set(key, boxMesh)
 
@@ -227,7 +253,7 @@ const CasinoModel = ({
         groupRef.current.remove(mesh)
       })
     }
-  }, [objectMeshMap, getUniqueLocations, getMachinesByLocation, filters])
+  }, [objectMeshMap, getUniqueLocations, getMachinesByLocation, filters, ddMachineIds])
 
   // LEGACY 3-tier color mapping - uncomment + remove the 5-tier version below to revert
   // const getHeatMapColor = (heatLevel) => {
@@ -339,37 +365,74 @@ const CasinoModel = ({
       console.log(`📊 CSV Analysis: ${csvObjects.length} CSV objects, ${modelObjects.length} 3D objects, ${missingFromModel.length} missing`)
 
       if (heatMapEnabled) {
-        // Heat map mode: show turnover-based colors
-        // Use daily aggregated data for Overall mode, hourly data for Heatmap mode
-        const heatMapResult = viewMode === 'overall' && getDailyHeatMapData
-          ? getDailyHeatMapData(filters)
-          : getHeatMapData(filters)
+        // Heat map mode: colour by MEAN turnover per machine-hour, NOT the sum.
+        // DD machines have ~14 weeks of real per-hour rows while non-DD have a single
+        // weekday-averaged row per (weekday, hour). Summing gives DD a ~14x artificial
+        // advantage so every DD machine looks hot. The mean is comparable across both.
+        // (Computed here, in-component, because the hook's getHeatMapData sums turnover.)
+        const heatFilters = {
+          ...filters,
+          occupancy: 'all',
+          ...(viewMode === 'overall' ? { hourOfDay: 'all' } : {})
+        }
+        const rows = getFilteredData(heatFilters)
 
-        const { data: heatMapData, percentiles } = heatMapResult
+        const sums = new Map()
+        const counts = new Map()
+        rows.forEach((r) => {
+          const id = r.blender_id
+          if (!id) return
+          sums.set(id, (sums.get(id) || 0) + (r.turnover || 0))
+          counts.set(id, (counts.get(id) || 0) + 1)
+        })
+        const meanTurnover = new Map()
+        counts.forEach((count, id) => {
+          meanTurnover.set(id, count ? sums.get(id) / count : 0)
+        })
 
-        // Reset all objects first (keep original colors for objects not in CSV)
+        // Recompute the colour-ramp bounds against the per-machine means.
+        const positiveMeans = [...meanTurnover.values()].filter((v) => v > 0).sort((a, b) => a - b)
+        const len = positiveMeans.length
+        const percentiles = len > 0
+          ? {
+              p25: positiveMeans[Math.floor(len * 0.25)] || 0,
+              p75: positiveMeans[Math.floor(len * 0.75)] || 0,
+              p90: positiveMeans[Math.floor(len * 0.90)] || 0
+            }
+          : { p25: 0, p75: 0, p90: 0 }
+
+        // Reset all objects to their original colour first.
         objectMeshMap.forEach((mesh, meshName) => {
           const originalMaterial = originalMaterials.get(meshName)
           if (mesh.isMesh && originalMaterial) {
             mesh.material = originalMaterial.clone()
             mesh.material.transparent = false
             mesh.material.opacity = 1.0
-            // Keep original color instead of gray - only change objects with data
           }
         })
 
-        // Apply heat map colors
-        heatMapData.forEach((item) => {
-          const mesh = objectMeshMap.get(item.blender_id)
-          if (mesh && mesh.isMesh) {
-            const heatColor = getHeatMapColor(item.heatLevel)
-            mesh.material = new THREE.MeshStandardMaterial({
-              color: heatColor,
-              transparent: false,
-              opacity: 1.0
-            })
-            // Removed detailed heat map logging for performance
+        // Heat-colour every machine (DD and non-DD) that has rows in the slice:
+        //   - in slice             -> heat ramp (live data)
+        //   - DD, no rows here      -> NO_DATA_GRAY (pale "off this week")
+        //   - non-DD, no rows here  -> keep original colour (no grey)
+        casinoDataMap.forEach((_data, id) => {
+          const mesh = objectMeshMap.get(id)
+          if (!mesh || !mesh.isMesh) return
+
+          let color
+          if (meanTurnover.has(id)) {
+            color = getHeatMapColor(getHeatLevel(meanTurnover.get(id), percentiles))
+          } else if (ddMachineIds.has(id)) {
+            color = NO_DATA_GRAY
+          } else {
+            return // non-DD with no data this filter: leave original colour
           }
+
+          mesh.material = new THREE.MeshStandardMaterial({
+            color,
+            transparent: false,
+            opacity: 1.0
+          })
         })
 
         if (highlightedMachineIds && highlightedMachineIds.size > 0) {
@@ -385,10 +448,8 @@ const CasinoModel = ({
         }
 
       } else if (getFilteredData) {
-        // Simple behavior: only red highlighting, no transparency
-        const filteredData = getFilteredData(filters)
-        
-        // Reset all objects to original state and apply custom colors
+        // Overall view (no heat map): show every object in its original/base colour
+        // (the machine-type colours from the GUI). No occupancy gradient or muted grays.
         objectMeshMap.forEach((mesh, meshName) => {
           const originalMaterial = originalMaterials.get(meshName)
           if (mesh.isMesh && originalMaterial) {
@@ -417,23 +478,9 @@ const CasinoModel = ({
             }
           }
         })
-        
-        // Apply red highlighting only to occupied objects that match filters
-        filteredData.forEach((item) => {
-          if (item.occupancy === 1) {
-            const mesh = objectMeshMap.get(item.blender_id)
-            if (mesh && mesh.isMesh) {
-              mesh.material = new THREE.MeshStandardMaterial({ 
-                color: 0xff0000,
-                transparent: false,
-                opacity: 1.0
-              })
-            }
-          }
-        })
       }
     }
-  }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds])
+  }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, ddMachineIds])
 
   // Hover -> bank tooltip (any bank, any zone).
   // The pointermove fires at the cursor's full sample rate, so we:
@@ -531,6 +578,11 @@ const CasinoModel = ({
     const canvas = gl.domElement
 
     const handleClick = (event) => {
+      // Dismiss any bank hover tooltip so it never lingers behind the machine
+      // detail card / pinned tooltip. Reset the ref so re-hover works afterward.
+      if (onBankHover) onBankHover(null, null)
+      lastHoveredBankKeyRef.current = null
+
       const rect = canvas.getBoundingClientRect()
       const x = ((event.clientX - rect.left) / rect.width) * 2 - 1
       const y = -((event.clientY - rect.top) / rect.height) * 2 + 1
@@ -542,6 +594,7 @@ const CasinoModel = ({
         Array.from(bankBoundingBoxes.values()), false
       )
       if (bankIntersects.length === 0) {
+        setNonDdInfo(null)
         if (onMachineClick) onMachineClick(null, null)
         return
       }
@@ -556,11 +609,27 @@ const CasinoModel = ({
 
       const machineIntersects = raycaster.intersectObjects(bankMeshes, false)
       if (machineIntersects.length === 0) {
+        setNonDdInfo(null)
         if (onMachineClick) onMachineClick(null, null)
         return
       }
 
       const intersectedMesh = machineIntersects[0].object
+
+      // Non-DD machines (no DD rows) are visible in the heatmap but not interactive.
+      // Swallow the click: clear any pinned DD card and show a minimal name+zone label.
+      if (!ddMachineIds.has(intersectedMesh.name)) {
+        const catalog = casinoDataMap.get(intersectedMesh.name)
+        if (onMachineClick) onMachineClick(null, null)
+        setNonDdInfo({
+          name: catalog?.machineFullName || intersectedMesh.name,
+          zone: catalog?.zone || 'Unknown',
+          point: machineIntersects[0].point.clone()
+        })
+        return
+      }
+
+      setNonDdInfo(null)
       const machineData = getMachineMetrics
         ? (getMachineMetrics(intersectedMesh.name, filters) || casinoDataMap.get(intersectedMesh.name))
         : casinoDataMap.get(intersectedMesh.name)
@@ -571,7 +640,7 @@ const CasinoModel = ({
 
     canvas.addEventListener('click', handleClick)
     return () => canvas.removeEventListener('click', handleClick)
-  }, [gl, camera, raycaster, objectMeshMap, casinoDataMap, bankBoundingBoxes, getMachinesByLocation, onMachineClick, getMachineMetrics, filters])
+  }, [gl, camera, raycaster, objectMeshMap, casinoDataMap, bankBoundingBoxes, getMachinesByLocation, onMachineClick, getMachineMetrics, filters, ddMachineIds, onBankHover])
 
   if (!gltf) return null
 
@@ -586,8 +655,32 @@ const CasinoModel = ({
           bankRankings={bankRankings}
           labelMode={labelMode}
           labelsOutliersOnly={labelsOutliersOnly}
-          labelTrendsByKey={labelTrendsByKey}
         />
+      )}
+
+      {/* Non-DD machine: minimal name + zone label (no metrics, not clickable through) */}
+      {nonDdInfo && (
+        <Html position={nonDdInfo.point} center style={{ pointerEvents: 'none', userSelect: 'none' }}>
+          <div
+            style={{
+              background: 'rgba(17, 24, 39, 0.95)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 10,
+              padding: '8px 12px',
+              color: '#e5e7eb',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 12px 24px -10px rgba(0,0,0,0.5)',
+              transform: 'translateY(-18px)'
+            }}
+          >
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>
+              {nonDdInfo.name}
+            </div>
+            <div style={{ fontSize: '0.68rem', color: '#9ca3af', marginTop: 2 }}>
+              {nonDdInfo.zone}
+            </div>
+          </div>
+        </Html>
       )}
     </>
   )

@@ -7,11 +7,12 @@ import NavigationBar from './components/NavigationBar'
 import MachineTooltip from './components/MachineTooltip'
 import MachineDetailCard from './components/MachineDetailCard'
 import BankHoverTooltip from './components/BankHoverTooltip'
-import OccupancyPanel from './components/OccupancyPanel'
-import GameMixPanel from './components/GameMixPanel'
+import InsightPanel from './components/InsightPanel'
+import CustomerDemandPanel from './components/CustomerDemandPanel'
 import ComparisonPanel from './components/ComparisonPanel'
 import FloorSummaryPanel from './components/FloorSummaryPanel'
 import useCasinoData from './hooks/useCasinoData'
+import useCustomerTierData from './hooks/useCustomerTierData'
 
 function App() {
   const [currentView, setCurrentView] = useState('analytics') // Default to analytics dashboard
@@ -40,8 +41,9 @@ function App() {
   const [showBankLabels, setShowBankLabels] = useState(false)
   const [labelMode, setLabelMode] = useState('name')
   const [labelsOutliersOnly, setLabelsOutliersOnly] = useState(false)
-  const [showOccupancyPanel, setShowOccupancyPanel] = useState(false)
-  const [showGamePanel, setShowGamePanel] = useState(false)
+  const [showInsightPanel, setShowInsightPanel] = useState(false)
+  const [showCustomerDemandPanel, setShowCustomerDemandPanel] = useState(false)
+  const [selectedTier, setSelectedTier] = useState('all')
   const [highlightTarget, setHighlightTarget] = useState(null)
   const [filters, setFilters] = useState({
     zone: 'all',
@@ -49,7 +51,8 @@ function App() {
     gameType: 'all',
     occupancy: 'vacant',
     dayOfWeek: 'all',
-    hourOfDay: 'all'
+    hourOfDay: 'all',
+    weekEnding: 'all'
   })
 
   // Interaction states
@@ -68,7 +71,6 @@ function App() {
     getHeatMapData,
     getDailyHeatMapData,
     getBankRankings,
-    getBankTrend,
     getZoneOccupancy,
     getPerformanceInsights,
     getMachineMetrics,
@@ -78,19 +80,25 @@ function App() {
 
   const bankRankings = useMemo(() => getBankRankings(filters), [getBankRankings, filters])
 
-  const labelTrendsByKey = useMemo(() => {
-    if (!showBankLabels || labelMode !== 'form') return null
-    const map = new Map()
-    for (const key of bankRankings.keys()) {
-      map.set(key, getBankTrend(key, filters))
-    }
-    return map
-  }, [showBankLabels, labelMode, bankRankings, getBankTrend, filters])
-
   const performanceInsights = useMemo(
     () => getPerformanceInsights(filters.zone === 'all' ? 'All' : filters.zone, filters),
     [getPerformanceInsights, filters]
   )
+
+  // Customer Demand lens: lazily loads tier data only once its panel is opened.
+  const {
+    getCustomerDemandInsights,
+    getAvailableTiers,
+    loading: tierLoading,
+    ready: tierReady
+  } = useCustomerTierData(casinoData, getFilteredData, showCustomerDemandPanel)
+
+  const customerDemandInsights = useMemo(
+    () => getCustomerDemandInsights(filters, selectedTier),
+    [getCustomerDemandInsights, filters, selectedTier]
+  )
+
+  const tierOptions = useMemo(() => getAvailableTiers(), [getAvailableTiers])
 
   const highlightedMachineIds = useMemo(() => {
     if (!highlightTarget?.machineIds?.length || !heatMapEnabled || viewMode !== 'heatmap') {
@@ -100,7 +108,9 @@ function App() {
   }, [highlightTarget, heatMapEnabled, viewMode])
 
   const handleFilterChange = (newFilters) => {
-    setFilters(newFilters)
+    // Merge so App-only fields (e.g. weekEnding, which NavigationBar does not emit)
+    // survive updates coming from the nav bar.
+    setFilters(prev => ({ ...prev, ...newFilters }))
   }
 
   const handleBankHover = (bankData, position) => {
@@ -136,18 +146,18 @@ function App() {
     setPinnedMachinePosition(null)
   }
 
-  const handleToggleOccupancyPanel = () => {
-    setShowOccupancyPanel((prev) => {
+  const handleToggleInsightPanel = () => {
+    setShowInsightPanel((prev) => {
       const next = !prev
-      if (next) setShowGamePanel(false)
+      if (next) setShowCustomerDemandPanel(false) // right-drawer panels are mutually exclusive
       return next
     })
   }
 
-  const handleToggleGamePanel = () => {
-    setShowGamePanel((prev) => {
+  const handleToggleCustomerDemandPanel = () => {
+    setShowCustomerDemandPanel((prev) => {
       const next = !prev
-      if (next) setShowOccupancyPanel(false)
+      if (next) setShowInsightPanel(false)
       return next
     })
   }
@@ -156,29 +166,55 @@ function App() {
   useEffect(() => {
     if (currentView === '3d' && viewMode === 'heatmap') {
       setHeatMapEnabled(true)
-      // Set default hour to 6AM and day to Monday when entering heatmap mode
-      setFilters(prev => ({ ...prev, hourOfDay: 6, dayOfWeek: 'Monday' }))
+      // Set default hour to 6AM, day to Saturday, and all week-endings when entering heatmap mode
+      setFilters(prev => ({ ...prev, hourOfDay: 6, dayOfWeek: 'Saturday', weekEnding: 'all' }))
     } else if (currentView === '3d' && viewMode !== 'heatmap') {
       setHeatMapEnabled(false)
-      setShowOccupancyPanel(false)
-      setShowGamePanel(false)
+      setShowInsightPanel(false)
+      setShowCustomerDemandPanel(false)
       setHighlightTarget(null)
     }
   }, [currentView, viewMode])
 
   useEffect(() => {
+    // The Customer Demand panel re-scopes its own tier highlight on filter change
+    // (see effect below), so don't clear it here.
+    if (showCustomerDemandPanel) return
     setHighlightTarget(null)
   }, [
     filters.zone,
     filters.dayOfWeek,
     filters.hourOfDay,
     filters.gameType,
-    filters.machineType
+    filters.machineType,
+    showCustomerDemandPanel
   ])
 
   useEffect(() => {
-    if (!showGamePanel) setHighlightTarget(null)
-  }, [showGamePanel])
+    if (!showInsightPanel && !showCustomerDemandPanel) setHighlightTarget(null)
+  }, [showInsightPanel, showCustomerDemandPanel])
+
+  // Selecting a customer tier highlights the machines serving that tier under the
+  // current filters; re-scopes when the tier or the active filters change.
+  useEffect(() => {
+    if (!showCustomerDemandPanel) return
+    if (selectedTier === 'all') {
+      setHighlightTarget(null)
+      return
+    }
+    const ids = customerDemandInsights?.tierMachineIds
+    if (ids && ids.length) {
+      const label = selectedTier.charAt(0) + selectedTier.slice(1).toLowerCase()
+      setHighlightTarget({
+        type: 'tier_select',
+        key: `tier:${selectedTier}`,
+        label: `${label} guests`,
+        machineIds: ids
+      })
+    } else {
+      setHighlightTarget(null)
+    }
+  }, [showCustomerDemandPanel, selectedTier, customerDemandInsights])
 
   // Keyboard navigation for hour filter in heatmap mode
   useEffect(() => {
@@ -267,10 +303,13 @@ function App() {
             setLabelMode={setLabelMode}
             labelsOutliersOnly={labelsOutliersOnly}
             setLabelsOutliersOnly={setLabelsOutliersOnly}
-            showOccupancyPanel={showOccupancyPanel}
-            onToggleOccupancyPanel={handleToggleOccupancyPanel}
-            showGamePanel={showGamePanel}
-            onToggleGamePanel={handleToggleGamePanel}
+            showInsightPanel={showInsightPanel}
+            onToggleInsightPanel={handleToggleInsightPanel}
+            showCustomerDemandPanel={showCustomerDemandPanel}
+            onToggleCustomerDemandPanel={handleToggleCustomerDemandPanel}
+            selectedTier={selectedTier}
+            onTierChange={setSelectedTier}
+            tierOptions={tierOptions}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             externalFilters={filters}
@@ -324,7 +363,6 @@ function App() {
                 bankRankings={bankRankings}
                 labelMode={labelMode}
                 labelsOutliersOnly={labelsOutliersOnly}
-                labelTrendsByKey={labelTrendsByKey}
                 highlightedMachineIds={highlightedMachineIds}
               />
             </Canvas>
@@ -381,22 +419,29 @@ function App() {
             </>
           )}
 
-          {/* Heatmap Occupancy Panel */}
-          {viewMode === 'heatmap' && showOccupancyPanel && (
-            <OccupancyPanel
-              zone={filters.zone === 'all' ? 'All zones' : filters.zone}
-              hour={filters.hourOfDay}
-              day={filters.dayOfWeek}
-              data={getZoneOccupancy(filters.zone === 'all' ? 'all' : filters.zone, filters)}
-            />
-          )}
-
-          {viewMode === 'heatmap' && showGamePanel && (
-            <GameMixPanel
+          {/* Combined Insights panel (heatmap mode) */}
+          {viewMode === 'heatmap' && showInsightPanel && (
+            <InsightPanel
               zone={filters.zone === 'all' ? 'All zones' : filters.zone}
               hour={filters.hourOfDay}
               day={filters.dayOfWeek}
               insights={performanceInsights}
+              occupancy={getZoneOccupancy(filters.zone === 'all' ? 'all' : filters.zone, filters)}
+              highlightTarget={highlightTarget}
+              onHighlightChange={setHighlightTarget}
+            />
+          )}
+
+          {/* Customer Demand panel (heatmap mode) */}
+          {viewMode === 'heatmap' && showCustomerDemandPanel && (
+            <CustomerDemandPanel
+              zone={filters.zone === 'all' ? 'All zones' : filters.zone}
+              hour={filters.hourOfDay}
+              day={filters.dayOfWeek}
+              tier={selectedTier}
+              insights={customerDemandInsights}
+              loading={tierLoading}
+              ready={tierReady}
               highlightTarget={highlightTarget}
               onHighlightChange={setHighlightTarget}
             />

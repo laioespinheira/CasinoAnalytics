@@ -122,7 +122,9 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
     ? { top: '96px', right: '24px', left: 'auto' }
     : { left: `${position.x + 15}px`, top: `${position.y + 15}px` }
 
-  // Fallback: bank exists in 3D but filtered out of the current data view.
+  // Fallback: no ranking entry for this bank. Two distinct cases:
+  //  - Non-DD bank (no DD coverage at all): show a clean "Averaged data only" note.
+  //  - DD bank filtered out of the current view: keep the "No data" message.
   if (!bankData) {
     return (
       <CardShell positionStyle={wrapperPositionStyle}>
@@ -132,7 +134,7 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
           fontSize: '0.85rem',
           color: 'rgba(255,255,255,0.5)'
         }}>
-          No data for the current filters.
+          {bankUserData.isNonDd ? 'Averaged data only' : 'No data for the current filters.'}
         </div>
       </CardShell>
     )

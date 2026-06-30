@@ -26,13 +26,6 @@ const TIER_ARROW = {
   null: '#2563eb'
 }
 
-const FORM_PALETTE = {
-  high: { bg: 'rgba(34, 197, 94, 0.35)', fg: '#22c55e' },
-  mid: { bg: 'rgba(245, 158, 11, 0.35)', fg: '#f59e0b' },
-  low: { bg: 'rgba(239, 68, 68, 0.35)', fg: '#ef4444' },
-  empty: { bg: 'rgba(255,255,255,0.12)', fg: 'rgba(255,255,255,0.35)' }
-}
-
 const BankLabel = ({
   position,
   bankName,
@@ -41,8 +34,7 @@ const BankLabel = ({
   tier = null,
   mode = 'name',
   avgTurnover = 0,
-  occupancyPct = 0,
-  trend = []
+  occupancyPct = 0
 }) => {
   const lineRef = useRef()
   const tierKey = tier ?? 'null'
@@ -62,10 +54,6 @@ const BankLabel = ({
   const cardBg = TIER_BG[tierKey] || TIER_BG.null
   const lineColor = TIER_LINE[tierKey] || TIER_LINE.null
   const arrowColor = TIER_ARROW[tierKey] || TIER_ARROW.null
-
-  const bucketMax = useMemo(() => (
-    trend.length ? Math.max(...trend.map(b => b.avgTurnover || 0), 1) : 1
-  ), [trend])
 
   const renderBody = () => {
     if (mode === 'avg') {
@@ -91,44 +79,6 @@ const BankLabel = ({
             {Math.round(occupancyPct)}%
           </div>
           <div style={{ fontSize: '0.52rem', opacity: 0.85, marginTop: 2 }}>occupancy</div>
-        </>
-      )
-    }
-    if (mode === 'form' && trend.length > 0) {
-      return (
-        <>
-          <div style={{ fontSize: '0.6rem', fontWeight: 600, opacity: 0.95, marginBottom: 3 }}>
-            {bankName}
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: 2,
-            alignItems: 'end',
-            height: 18,
-            minWidth: 60
-          }}>
-            {trend.map(bucket => {
-              const pal = FORM_PALETTE[bucket.tier] || FORM_PALETTE.empty
-              const h = bucketMax > 0
-                ? Math.max(10, ((bucket.avgTurnover || 0) / bucketMax) * 100)
-                : 10
-              return (
-                <div key={bucket.label} style={{ height: '100%', display: 'flex', alignItems: 'end' }}>
-                  <div
-                    title={`${bucket.label}: ${formatCompactCurrency(bucket.avgTurnover)}`}
-                    style={{
-                      width: '100%',
-                      height: `${h}%`,
-                      background: pal.bg,
-                      borderTop: `2px solid ${pal.fg}`,
-                      borderRadius: '2px 2px 0 0'
-                    }}
-                  />
-                </div>
-              )
-            })}
-          </div>
         </>
       )
     }
@@ -178,7 +128,7 @@ const BankLabel = ({
           style={{
             background: cardBg,
             color: 'white',
-            padding: mode === 'form' ? '5px 8px' : '6px 10px',
+            padding: '6px 10px',
             borderRadius: '6px',
             fontSize: '0.625rem',
             fontWeight: '600',
@@ -189,7 +139,7 @@ const BankLabel = ({
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            minWidth: mode === 'form' ? '72px' : '80px'
+            minWidth: '80px'
           }}
         >
           {renderBody()}
@@ -221,8 +171,7 @@ function labelPropsEqual(prev, next) {
     prev.mode === next.mode &&
     prev.avgTurnover === next.avgTurnover &&
     prev.occupancyPct === next.occupancyPct &&
-    prev.position === next.position &&
-    prev.trend === next.trend
+    prev.position === next.position
   )
 }
 

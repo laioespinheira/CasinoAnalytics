@@ -135,7 +135,7 @@ const OccupancyPanel = ({ zone = 'Zone DD', hour, day, data }) => {
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}>
-            Zone Occupancy
+            Average Occupancy
           </div>
           <div style={{
             fontSize: '2.5rem',
@@ -143,13 +143,13 @@ const OccupancyPanel = ({ zone = 'Zone DD', hour, day, data }) => {
             lineHeight: 1,
             marginBottom: '10px'
           }}>
-            {data.pct.toFixed(1)}%
+            {Math.round(data.pct)}%
           </div>
           <div style={{
             fontSize: '0.9rem',
             opacity: 0.95
           }}>
-            {(data.occupiedMachines ?? data.occupied ?? 0).toLocaleString()} / {(data.totalMachines ?? data.total ?? 0).toLocaleString()} machines occupied
+            {(data.totalMachines ?? 0).toLocaleString()} machines total · {(data.saturatedMachines ?? data.occupiedMachines ?? 0).toLocaleString()} in high demand (≥85%)
           </div>
         </div>
 
@@ -212,8 +212,7 @@ const OccupancyPanel = ({ zone = 'Zone DD', hour, day, data }) => {
               <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'left', fontWeight: '700' }}>Bank</th>
               <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'left', fontWeight: '700' }}>Machine Type</th>
               <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'right', fontWeight: '700' }}>Machines</th>
-              <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'right', fontWeight: '700' }}>Occupied</th>
-              <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'right', fontWeight: '700' }}>%</th>
+              <th style={{ ...cellStyles, color: '#6b7280', textAlign: 'right', fontWeight: '700' }}>Avg Occ %</th>
             </tr>
           </thead>
           <tbody>
@@ -222,9 +221,8 @@ const OccupancyPanel = ({ zone = 'Zone DD', hour, day, data }) => {
                 <td style={cellStyles}>{row.bank}</td>
                 <td style={cellStyles}>{row.machineType}</td>
                 <td style={{ ...cellStyles, textAlign: 'right' }}>{row.total.toLocaleString()}</td>
-                <td style={{ ...cellStyles, textAlign: 'right' }}>{row.occupied.toLocaleString()}</td>
                 <td style={{ ...cellStyles, textAlign: 'right', fontWeight: '700', color: '#059669' }}>
-                  {row.pct.toFixed(1)}%
+                  {row.pct.toFixed(0)}%
                 </td>
               </tr>
             ))}

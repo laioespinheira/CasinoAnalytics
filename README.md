@@ -2,6 +2,10 @@
 
 An interactive casino-operations workbench that pairs a 3D casino floor model with rich performance dashboards. The project explores how analysts can move between an immersive floor view and modern KPI visualisations while experimenting with styling, lighting, and data exploration flows.
 
+## Documentation
+
+For architecture, recent changes, data pipeline, deployment, and Claude/LLM context, see **[docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)**.
+
 ## Project Goals
 - Deliver a responsive analytics experience that feels modern, lightweight, and easy to scan.
 - Visualise casino performance trends using mock data first, with the intention to plug in real feeds later.

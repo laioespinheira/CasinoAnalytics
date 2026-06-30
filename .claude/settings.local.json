@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git -C \"c:\\\\Users\\\\laioe\\\\Projects\\\\CasinoAnalytics\" log --oneline -20)",
+      "Bash(git -C \"c:\\\\Users\\\\laioe\\\\Projects\\\\CasinoAnalytics\" log --format=\"%h %ad %s\" --date=short -10)",
+      "Bash(npx vercel *)",
+      "Bash(git log *)",
+      "Bash(python -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python scripts/_edit_notebook.py)",
+      "PowerShell(Get-ChildItem -Force -File | Where-Object { $_.Name -match 'eslint|lint' } | Select-Object Name; \"---tracked in git---\"; git ls-files | Select-String -Pattern 'eslint')",
+      "PowerShell(npm run *)",
+      "PowerShell(git diff --stat HEAD; \"==== App.jsx diff vs HEAD ====\"; git diff HEAD -- src/App.jsx)",
+      "PowerShell(git add *)"
     ],
     "deny": [],
     "ask": []
