@@ -11,6 +11,7 @@ import InsightPanel from './components/InsightPanel'
 import CustomerDemandPanel from './components/CustomerDemandPanel'
 import ComparisonPanel from './components/ComparisonPanel'
 import FloorSummaryPanel from './components/FloorSummaryPanel'
+import TimePanel from './components/TimePanel'
 import useCasinoData from './hooks/useCasinoData'
 import useCustomerTierData from './hooks/useCustomerTierData'
 
@@ -85,13 +86,15 @@ function App() {
     [getPerformanceInsights, filters]
   )
 
-  // Customer Demand lens: lazily loads tier data only once its panel is opened.
+  // Customer Demand lens: lazily loads tier data once its drawer panel is opened
+  // OR the Time tab (which also surfaces the Customer Demand readout) is active.
+  const timeViewActive = currentView === '3d' && viewMode === 'time'
   const {
     getCustomerDemandInsights,
     getAvailableTiers,
     loading: tierLoading,
     ready: tierReady
-  } = useCustomerTierData(casinoData, getFilteredData, showCustomerDemandPanel)
+  } = useCustomerTierData(casinoData, getFilteredData, showCustomerDemandPanel || timeViewActive)
 
   const customerDemandInsights = useMemo(
     () => getCustomerDemandInsights(filters, selectedTier),
@@ -417,6 +420,19 @@ function App() {
                 comparisonPeriod={comparisonPeriod}
               />
             </>
+          )}
+
+          {/* Time tab: deep-analytics home reusing the real-data descriptive panels */}
+          {viewMode === 'time' && (
+            <TimePanel
+              filters={filters}
+              selectedTier={selectedTier}
+              getPerformanceInsights={getPerformanceInsights}
+              getZoneOccupancy={getZoneOccupancy}
+              getCustomerDemandInsights={getCustomerDemandInsights}
+              tierLoading={tierLoading}
+              tierReady={tierReady}
+            />
           )}
 
           {/* Combined Insights panel (heatmap mode) */}

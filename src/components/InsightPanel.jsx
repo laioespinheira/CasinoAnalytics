@@ -146,6 +146,19 @@ const panelStyles = {
   overflowY: 'auto'
 }
 
+// In-flow variant for hosting the panel inside a tab layout (e.g. the Time tab)
+// rather than as the fixed right-hand drawer. Presentation only.
+const embeddedPanelStyles = {
+  position: 'relative',
+  width: '100%',
+  maxWidth: 'none',
+  background: '#ffffff',
+  border: '1px solid #e5e7eb',
+  borderRadius: 16,
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+  overflow: 'visible'
+}
+
 const headerStyles = {
   position: 'sticky',
   top: 0,
@@ -170,7 +183,8 @@ const InsightPanel = ({
   insights,
   occupancy,
   highlightTarget,
-  onHighlightChange
+  onHighlightChange,
+  embedded = false
 }) => {
   const zoneLabel = zone && zone !== 'all' && zone !== 'All' ? zone : 'All zones'
 
@@ -216,7 +230,7 @@ const InsightPanel = ({
   const summary = buildSummary(insights, occupancy, zoneLabel)
 
   return (
-    <div style={panelStyles}>
+    <div style={embedded ? embeddedPanelStyles : panelStyles}>
       {/* Header */}
       <div style={headerStyles}>
         <div style={{ color: '#6b7280', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>
