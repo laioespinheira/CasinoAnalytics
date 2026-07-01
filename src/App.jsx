@@ -10,7 +10,6 @@ import InsightPanel from './components/InsightPanel'
 import CustomerDemandPanel from './components/CustomerDemandPanel'
 import ComparisonPanel from './components/ComparisonPanel'
 import FloorSummaryPanel from './components/FloorSummaryPanel'
-import TimePanel from './components/TimePanel'
 import useCasinoData from './hooks/useCasinoData'
 import useCustomerTierData from './hooks/useCustomerTierData'
 
@@ -102,12 +101,14 @@ function App() {
 
   const tierOptions = useMemo(() => getAvailableTiers(), [getAvailableTiers])
 
+  // Floor highlight is available in both drawer modes: heatmap (heat on) and time
+  // (heat off by design). Keyed off viewMode, not heatMapEnabled, so Time still dims.
   const highlightedMachineIds = useMemo(() => {
-    if (!highlightTarget?.machineIds?.length || !heatMapEnabled || viewMode !== 'heatmap') {
+    if (!highlightTarget?.machineIds?.length || (viewMode !== 'heatmap' && viewMode !== 'time')) {
       return null
     }
     return new Set(highlightTarget.machineIds)
-  }, [highlightTarget, heatMapEnabled, viewMode])
+  }, [highlightTarget, viewMode])
 
   const handleFilterChange = (newFilters) => {
     // Merge so App-only fields (e.g. weekEnding, which NavigationBar does not emit)
@@ -401,21 +402,8 @@ function App() {
             </>
           )}
 
-          {/* Time tab: deep-analytics home reusing the real-data descriptive panels */}
-          {viewMode === 'time' && (
-            <TimePanel
-              filters={filters}
-              selectedTier={selectedTier}
-              getPerformanceInsights={getPerformanceInsights}
-              getZoneOccupancy={getZoneOccupancy}
-              getCustomerDemandInsights={getCustomerDemandInsights}
-              tierLoading={tierLoading}
-              tierReady={tierReady}
-            />
-          )}
-
-          {/* Combined Insights panel (heatmap mode) */}
-          {viewMode === 'heatmap' && showInsightPanel && (
+          {/* Combined Insights panel (heatmap + time modes) */}
+          {(viewMode === 'heatmap' || viewMode === 'time') && showInsightPanel && (
             <InsightPanel
               zone={filters.zone === 'all' ? 'All zones' : filters.zone}
               hour={filters.hourOfDay}
@@ -427,8 +415,8 @@ function App() {
             />
           )}
 
-          {/* Customer Demand panel (heatmap mode) */}
-          {viewMode === 'heatmap' && showCustomerDemandPanel && (
+          {/* Customer Demand panel (heatmap + time modes) */}
+          {(viewMode === 'heatmap' || viewMode === 'time') && showCustomerDemandPanel && (
             <CustomerDemandPanel
               zone={filters.zone === 'all' ? 'All zones' : filters.zone}
               hour={filters.hourOfDay}

@@ -566,8 +566,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           </div>
 
-          {/* Customer Tier Filter - Heatmap mode only (Customer Demand lens) */}
-          {viewMode === 'heatmap' && onTierChange && (
+          {/* Customer Tier Filter - Heatmap + Time modes (Customer Demand lens) */}
+          {(viewMode === 'heatmap' || viewMode === 'time') && onTierChange && (
             <div style={filterGroupStyles}>
               <label style={labelStyles}>Customer Tier</label>
               <div style={dropdownContainerStyles}>
@@ -721,8 +721,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           )}
 
-          {/* Combined Insights Panel Toggle - Heatmap mode only */}
-          {viewMode === 'heatmap' && onToggleInsightPanel && (
+          {/* Combined Insights Panel Toggle - Heatmap + Time modes */}
+          {(viewMode === 'heatmap' || viewMode === 'time') && onToggleInsightPanel && (
             <button
               onClick={onToggleInsightPanel}
               style={{
@@ -745,8 +745,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           )}
 
-          {/* Customer Demand Panel Toggle - Heatmap mode only */}
-          {viewMode === 'heatmap' && onToggleCustomerDemandPanel && (
+          {/* Customer Demand Panel Toggle - Heatmap + Time modes */}
+          {(viewMode === 'heatmap' || viewMode === 'time') && onToggleCustomerDemandPanel && (
             <button
               onClick={onToggleCustomerDemandPanel}
               style={{

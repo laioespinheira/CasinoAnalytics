@@ -478,6 +478,20 @@ const CasinoModel = ({
             }
           }
         })
+
+        // Floor highlight without heat colour (e.g. Time mode): dim everything that
+        // is not part of the highlighted set, mirroring the heat-branch treatment.
+        if (highlightedMachineIds && highlightedMachineIds.size > 0) {
+          objectMeshMap.forEach((mesh, meshName) => {
+            if (!mesh.isMesh) return
+            if (highlightedMachineIds.has(meshName)) return
+            mesh.material = new THREE.MeshStandardMaterial({
+              color: '#d1d5db',
+              transparent: true,
+              opacity: 0.35
+            })
+          })
+        }
       }
     }
   }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, ddMachineIds])
