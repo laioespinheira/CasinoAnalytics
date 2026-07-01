@@ -6,6 +6,7 @@
     "build:data": "python scripts/build_casino_dataset.py",
     "dev": "vite",
     "build": "vite build",
+    "verify:metric": "node scripts/verifySeatHourMetrics.mjs",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "deploy": "npx vercel --prod --yes"
