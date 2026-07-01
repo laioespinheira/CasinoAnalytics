@@ -1,7 +1,6 @@
 ﻿import React, { useState, useEffect, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CasinoScene from './components/CasinoScene'
-import BasicDashboard from './components/BasicDashboard'
 import GUI from './components/GUI'
 import NavigationBar from './components/NavigationBar'
 import MachineTooltip from './components/MachineTooltip'
@@ -16,7 +15,7 @@ import useCasinoData from './hooks/useCasinoData'
 import useCustomerTierData from './hooks/useCustomerTierData'
 
 function App() {
-  const [currentView, setCurrentView] = useState('3d') // Boot into the 3D floor; Analytics still reachable via nav
+  const [currentView, setCurrentView] = useState('3d') // Only the 3D floor remains; Analytics tab retired
   const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, heatmap, comparison, time
 
   // Comparison mode states
@@ -273,26 +272,6 @@ function App() {
 
   return (
     <>
-      {currentView === 'analytics' ? (
-        <div>
-          <NavigationBar
-            onFilterChange={handleFilterChange}
-            casinoData={casinoData}
-            currentView={currentView}
-            onViewChange={setCurrentView}
-            heatMapEnabled={heatMapEnabled}
-            setHeatMapEnabled={setHeatMapEnabled}
-            showBankLabels={showBankLabels}
-            setShowBankLabels={setShowBankLabels}
-            labelMode={labelMode}
-            setLabelMode={setLabelMode}
-            labelsOutliersOnly={labelsOutliersOnly}
-            setLabelsOutliersOnly={setLabelsOutliersOnly}
-          />
-          <BasicDashboard />
-        </div>
-      ) : (
-        <>
           <NavigationBar
             onFilterChange={handleFilterChange}
             casinoData={casinoData}
@@ -477,8 +456,6 @@ function App() {
             specialObjectsColor={specialObjectsColor}
             setSpecialObjectsColor={setSpecialObjectsColor}
           />
-        </>
-      )}
     </>
   )
 }

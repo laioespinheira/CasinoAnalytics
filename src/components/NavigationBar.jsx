@@ -332,35 +332,6 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
           <div style={{ transform: 'translateX(-50%)', display: 'flex', alignItems: 'stretch', height: '100%' }}>
             {/* Main Tabs - Always centered */}
             <button
-              onClick={() => onViewChange('analytics')}
-              style={{
-                background: 'transparent',
-                color: currentView === 'analytics' ? '#111827' : '#9ca3af',
-                border: 'none',
-                borderBottom: '3px solid',
-                borderBottomColor: currentView === 'analytics' ? '#3b82f6' : 'transparent',
-                borderRadius: '0',
-                padding: '10px 16px',
-                fontSize: '1rem',
-                fontWeight: currentView === 'analytics' ? '600' : '500',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'color 0.2s ease, border-color 0.2s ease',
-                height: '100%',
-                boxSizing: 'border-box'
-              }}
-            >
-              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              Analytics
-            </button>
-
-            <div style={{ width: '20px' }} />
-
-            <button
               onClick={() => onViewChange('3d')}
               style={{
                 background: 'transparent',
