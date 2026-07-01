@@ -17,7 +17,7 @@ import useCustomerTierData from './hooks/useCustomerTierData'
 
 function App() {
   const [currentView, setCurrentView] = useState('3d') // Boot into the 3D floor; Analytics still reachable via nav
-  const [viewMode, setViewMode] = useState('heatmap') // 3D view mode: overall, heatmap, comparison, time
+  const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, heatmap, comparison, time
 
   // Comparison mode states
   const [comparisonPeriod, setComparisonPeriod] = useState('previousYear')
