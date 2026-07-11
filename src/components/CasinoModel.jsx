@@ -137,7 +137,8 @@ const CasinoModel = ({
   bankRankings,
   labelMode = 'name',
   labelsOutliersOnly = false,
-  highlightedMachineIds = null
+  highlightedMachineIds = null,
+  highlightColorMap = null
 }) => {
   const gltf = useLoader(GLTFLoader, './models/casino_floor_map.glb')
   const groupRef = useRef()
@@ -481,10 +482,26 @@ const CasinoModel = ({
 
         // Floor highlight without heat colour (e.g. Time mode): dim everything that
         // is not part of the highlighted set, mirroring the heat-branch treatment.
+        // When a highlightColorMap is supplied (Yield tab), the highlighted machines
+        // are additionally tinted by their group colour (validated vs flagged) so the
+        // two cohorts read apart at a glance. This block only runs in the no-heat
+        // branch, so the Heatmap render path is unchanged.
         if (highlightedMachineIds && highlightedMachineIds.size > 0) {
           objectMeshMap.forEach((mesh, meshName) => {
             if (!mesh.isMesh) return
-            if (highlightedMachineIds.has(meshName)) return
+            if (highlightedMachineIds.has(meshName)) {
+              const tint = highlightColorMap && highlightColorMap.get(meshName)
+              if (tint) {
+                mesh.material = new THREE.MeshStandardMaterial({
+                  color: tint,
+                  emissive: tint,
+                  emissiveIntensity: 0.35,
+                  transparent: false,
+                  opacity: 1.0
+                })
+              }
+              return
+            }
             mesh.material = new THREE.MeshStandardMaterial({
               color: '#d1d5db',
               transparent: true,
@@ -494,7 +511,7 @@ const CasinoModel = ({
         }
       }
     }
-  }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, ddMachineIds])
+  }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, highlightColorMap, ddMachineIds])
 
   // Hover -> bank tooltip (any bank, any zone).
   // The pointermove fires at the cursor's full sample rate, so we:

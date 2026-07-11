@@ -29,7 +29,8 @@ const CasinoScene = ({
   bankRankings,
   labelMode,
   labelsOutliersOnly,
-  highlightedMachineIds
+  highlightedMachineIds,
+  highlightColorMap
 }) => {
   const { camera } = useThree()
   const controlsRef = useRef()
@@ -85,6 +86,7 @@ const CasinoScene = ({
         labelMode={labelMode}
         labelsOutliersOnly={labelsOutliersOnly}
         highlightedMachineIds={highlightedMachineIds}
+        highlightColorMap={highlightColorMap}
       />
     </>
   )

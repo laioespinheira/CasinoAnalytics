@@ -18,6 +18,10 @@ import YieldPanel from './components/YieldPanel'
 // (passing an inline {} would recompute the ranking/bridge every render).
 const YIELD_PARAMS = {}
 
+// Two-tone floor highlight on the Yield tab: opportunity vs validation.
+const YIELD_FLAGGED_COLOR = '#f59e0b'   // amber - the 6 under-configured banks
+const YIELD_VALIDATED_COLOR = '#10b981' // green - the 3 saturated, already-optimal banks
+
 function App() {
   const [currentView, setCurrentView] = useState('3d') // Only the 3D floor remains; Analytics tab retired
   const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, yield, time, heatmap
@@ -133,14 +137,47 @@ function App() {
     return { threshold, totalConstrained: total, sundayWindowConstrained: sundayWindow, sundayWindowShare, overIndex, topCells }
   }, [ranking, bridge, valueDensity])
 
-  // Floor highlight is available in both drawer modes: heatmap (heat on) and time
-  // (heat off by design). Keyed off viewMode, not heatMapEnabled, so Time still dims.
+  // bankKey -> [machineId] (blender_ids), resolved from the seat-hour base so the
+  // Yield tab can light a bank's machines on the floor.
+  const bankMachineIds = useMemo(() => {
+    const m = new Map()
+    seatHourBase?.machines?.forEach((mac, id) => {
+      if (!m.has(mac.bankKey)) m.set(mac.bankKey, [])
+      m.get(mac.bankKey).push(id)
+    })
+    return m
+  }, [seatHourBase])
+
+  // Yield-tab floor highlight: flagged banks (amber) vs validated saturated banks
+  // (green). Selecting a table row focuses that bank and dims the rest.
+  const yieldHighlight = useMemo(() => {
+    if (!(currentView === '3d' && viewMode === 'yield')) return { ids: null, colors: null }
+    const flaggedKeys = (ranking?.flagged || []).map((b) => b.bankKey)
+    const validatedKeys = (ranking?.validation?.saturatedBanks || []).map((b) => b.bankKey)
+    const ids = new Set()
+    const colors = new Map()
+    const add = (bankKey, color) => {
+      (bankMachineIds.get(bankKey) || []).forEach((id) => { ids.add(id); colors.set(id, color) })
+    }
+    if (selectedBankKey) {
+      const isValidated = validatedKeys.includes(selectedBankKey)
+      add(selectedBankKey, isValidated ? YIELD_VALIDATED_COLOR : YIELD_FLAGGED_COLOR)
+    } else {
+      validatedKeys.forEach((k) => add(k, YIELD_VALIDATED_COLOR))
+      flaggedKeys.forEach((k) => add(k, YIELD_FLAGGED_COLOR))
+    }
+    return { ids: ids.size ? ids : null, colors }
+  }, [currentView, viewMode, ranking, bankMachineIds, selectedBankKey])
+
+  // Floor highlight is available in the drawer modes (heatmap heat-on / time
+  // heat-off) and, driven by the flagged banks, the Yield tab. Keyed off viewMode.
   const highlightedMachineIds = useMemo(() => {
+    if (viewMode === 'yield') return yieldHighlight.ids
     if (!highlightTarget?.machineIds?.length || (viewMode !== 'heatmap' && viewMode !== 'time')) {
       return null
     }
     return new Set(highlightTarget.machineIds)
-  }, [highlightTarget, viewMode])
+  }, [highlightTarget, viewMode, yieldHighlight])
 
   const handleFilterChange = (newFilters) => {
     // Merge so App-only fields (e.g. weekEnding, which NavigationBar does not emit)
@@ -353,6 +390,7 @@ function App() {
                 labelMode={labelMode}
                 labelsOutliersOnly={labelsOutliersOnly}
                 highlightedMachineIds={highlightedMachineIds}
+                highlightColorMap={viewMode === 'yield' ? yieldHighlight.colors : null}
               />
             </Canvas>
           </div>
