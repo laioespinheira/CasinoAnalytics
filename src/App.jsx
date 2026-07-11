@@ -8,28 +8,20 @@ import MachineDetailCard from './components/MachineDetailCard'
 import BankHoverTooltip from './components/BankHoverTooltip'
 import InsightPanel from './components/InsightPanel'
 import CustomerDemandPanel from './components/CustomerDemandPanel'
-import ComparisonPanel from './components/ComparisonPanel'
-import FloorSummaryPanel from './components/FloorSummaryPanel'
 import useCasinoData from './hooks/useCasinoData'
 import useCustomerTierData from './hooks/useCustomerTierData'
+import usePlacementBridge from './hooks/usePlacementBridge'
+import useValueDensity from './hooks/useValueDensity'
+import YieldPanel from './components/YieldPanel'
+
+// Stable empty-params ref so the Yield hooks' useMemos hold across renders
+// (passing an inline {} would recompute the ranking/bridge every render).
+const YIELD_PARAMS = {}
 
 function App() {
   const [currentView, setCurrentView] = useState('3d') // Only the 3D floor remains; Analytics tab retired
-  const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, heatmap, comparison, time
+  const [viewMode, setViewMode] = useState('overall') // 3D view mode: overall, yield, time, heatmap
 
-  // Comparison mode states
-  const [comparisonPeriod, setComparisonPeriod] = useState('previousYear')
-  const [comparisonMetrics, setComparisonMetrics] = useState({
-    turnover: true,
-    revenue: true,
-    theoWin: true
-  })
-  const [displayOptions, setDisplayOptions] = useState({
-    showPercentageLabels: true,
-    showArrows: true,
-    highlightSignificant: false,
-    filter: 'all' // 'all', 'improved', 'declined'
-  })
   const [backgroundColor, setBackgroundColor] = useState('#ffffff')
   const [ambientIntensity, setAmbientIntensity] = useState(0.51)
   const [directionalIntensity, setDirectionalIntensity] = useState(2.5)
@@ -60,6 +52,9 @@ function App() {
   const [detailModalMachine, setDetailModalMachine] = useState(null)
   const [hoveredBank, setHoveredBank] = useState(null)
   const [bankTooltipPosition, setBankTooltipPosition] = useState(null)
+
+  // Yield tab: which flagged bank row is focused (drives floor focus in commit 2)
+  const [selectedBankKey, setSelectedBankKey] = useState(null)
 
   // Load casino data
   const {
@@ -100,6 +95,43 @@ function App() {
   )
 
   const tierOptions = useMemo(() => getAvailableTiers(), [getAvailableTiers])
+
+  // Stage-2 analysis layers for the Yield tab (DD placement ranking + dollar
+  // bridge + value-density mechanism evidence). Pure compute over casinoData; these
+  // consume the verified modules and touch none of the existing hooks.
+  const { base: seatHourBase, ranking, bridge } = usePlacementBridge(casinoData, YIELD_PARAMS)
+  const valueDensity = useValueDensity(casinoData, YIELD_PARAMS)
+
+  const heartbeat = useMemo(() => valueDensity.weeklyHeartbeat(), [valueDensity])
+
+  // Where the >=0.80 (85%-capture) seat-hours physically sit across the flagged
+  // banks - computed from the same atoms the metric verified, for the Sunday 13-16
+  // corroboration line.
+  const constrainedSummary = useMemo(() => {
+    const flaggedKeys = new Set((ranking?.flagged || []).map((b) => b.bankKey))
+    if (flaggedKeys.size === 0) return null
+    const threshold = bridge?.params?.machineHourConstraintThreshold ?? 0.8
+    const sundayHours = new Set([13, 14, 15, 16])
+    const byCell = new Map()
+    let total = 0
+    let sundayWindow = 0
+    for (const a of valueDensity.base.atoms) {
+      if (!flaggedKeys.has(a.bankKey) || a.occ < threshold) continue
+      total += 1
+      if (a.weekday === 'Sunday' && sundayHours.has(a.hour)) sundayWindow += 1
+      const k = `${a.weekday}|${a.hour}`
+      byCell.set(k, (byCell.get(k) || 0) + 1)
+    }
+    const topCells = [...byCell.entries()]
+      .map(([k, v]) => { const [weekday, hour] = k.split('|'); return { weekday, hour: Number(hour), constrainedHours: v } })
+      .sort((a, b) => b.constrainedHours - a.constrainedHours)
+      .slice(0, 6)
+    const sundayWindowShare = total > 0 ? sundayWindow / total : 0
+    // Uniform baseline for a 4-hour window: 4 / (7*24) of the week. Over-index =
+    // how many times denser the Sunday 13-16 block is than a flat spread.
+    const overIndex = sundayWindowShare / (4 / 168)
+    return { threshold, totalConstrained: total, sundayWindowConstrained: sundayWindow, sundayWindowShare, overIndex, topCells }
+  }, [ranking, bridge, valueDensity])
 
   // Floor highlight is available in both drawer modes: heatmap (heat on) and time
   // (heat off by design). Keyed off viewMode, not heatMapEnabled, so Time still dims.
@@ -177,6 +209,7 @@ function App() {
       setShowCustomerDemandPanel(false)
       setHighlightTarget(null)
     }
+    if (viewMode !== 'yield') setSelectedBankKey(null)
   }, [currentView, viewMode])
 
   useEffect(() => {
@@ -243,33 +276,6 @@ function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentView, viewMode, filters.hourOfDay])
-
-  // Mock floor summary data for comparison mode
-  // TODO: Calculate this from actual casino data
-  const floorSummaryMetrics = {
-    turnover: {
-      current: 2400000,
-      change: 12.5
-    },
-    revenue: {
-      current: 456000,
-      change: 8.3
-    },
-    theoWin: {
-      current: 423000,
-      change: 9.1
-    },
-    bestZone: {
-      name: 'Zone C',
-      change: 18.2
-    },
-    worstZone: {
-      // LEGACY: 'Zone F' (before D/E/F were merged into "Zone DD")
-      name: 'Zone DD',
-      change: -4.3
-    }
-  }
-
 
   return (
     <>
@@ -384,22 +390,17 @@ function App() {
             />
           )}
 
-          {/* Comparison Mode Panels */}
-          {viewMode === 'comparison' && (
-            <>
-              <ComparisonPanel
-                comparisonPeriod={comparisonPeriod}
-                onComparisonChange={setComparisonPeriod}
-                metrics={comparisonMetrics}
-                onMetricsChange={setComparisonMetrics}
-                displayOptions={displayOptions}
-                onDisplayOptionsChange={setDisplayOptions}
-              />
-              <FloorSummaryPanel
-                metrics={floorSummaryMetrics}
-                comparisonPeriod={comparisonPeriod}
-              />
-            </>
+          {/* Yield tab: placement ranking + dollar bridge + mechanism evidence */}
+          {viewMode === 'yield' && (
+            <YieldPanel
+              validation={ranking?.validation}
+              flagged={ranking?.flagged}
+              bridge={bridge}
+              heartbeat={heartbeat}
+              constrainedSummary={constrainedSummary}
+              selectedBankKey={selectedBankKey}
+              onSelectBank={setSelectedBankKey}
+            />
           )}
 
           {/* Combined Insights panel (heatmap + time modes) */}

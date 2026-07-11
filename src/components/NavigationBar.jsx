@@ -387,17 +387,17 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                 Overall
               </button>
               <button
-                onClick={() => onViewModeChange('heatmap')}
+                onClick={() => onViewModeChange('yield')}
                 style={{
-                  background: viewMode === 'heatmap' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'heatmap' ? '#3b82f6' : '#9ca3af',
+                  background: viewMode === 'yield' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'yield' ? '#3b82f6' : '#9ca3af',
                   border: 'none',
                   borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'heatmap' ? '#3b82f6' : 'transparent',
+                  borderBottomColor: viewMode === 'yield' ? '#3b82f6' : 'transparent',
                   borderRadius: '0',
                   padding: '10px 14px',
                   fontSize: '0.9rem',
-                  fontWeight: viewMode === 'heatmap' ? '500' : '400',
+                  fontWeight: viewMode === 'yield' ? '500' : '400',
                   cursor: 'pointer',
                   transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
                   height: '100%',
@@ -406,29 +406,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
                   boxSizing: 'border-box'
                 }}
               >
-                Heatmap
-              </button>
-              <button
-                onClick={() => onViewModeChange('comparison')}
-                style={{
-                  background: viewMode === 'comparison' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'comparison' ? '#3b82f6' : '#9ca3af',
-                  border: 'none',
-                  borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'comparison' ? '#3b82f6' : 'transparent',
-                  borderRadius: '0',
-                  padding: '10px 14px',
-                  fontSize: '0.9rem',
-                  fontWeight: viewMode === 'comparison' ? '500' : '400',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >
-                Comparison
+                Yield
               </button>
               <button
                 onClick={() => onViewModeChange('time')}
@@ -452,12 +430,34 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               >
                 Time
               </button>
+              <button
+                onClick={() => onViewModeChange('heatmap')}
+                style={{
+                  background: viewMode === 'heatmap' ? '#eff6ff' : 'transparent',
+                  color: viewMode === 'heatmap' ? '#3b82f6' : '#9ca3af',
+                  border: 'none',
+                  borderBottom: '3px solid',
+                  borderBottomColor: viewMode === 'heatmap' ? '#3b82f6' : 'transparent',
+                  borderRadius: '0',
+                  padding: '10px 14px',
+                  fontSize: '0.9rem',
+                  fontWeight: viewMode === 'heatmap' ? '500' : '400',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Heatmap
+              </button>
             </div>
           )}
         </div>
 
-        {/* Filters - Only show in 3D view */}
-        {currentView === '3d' && (
+        {/* Filters - Only show in 3D view; hidden in Yield (fixed 13-week DD analysis) */}
+        {currentView === '3d' && viewMode !== 'yield' && (
         <div style={filtersContainerStyles}>
           {/* Zone Filter */}
           <div style={filterGroupStyles}>
