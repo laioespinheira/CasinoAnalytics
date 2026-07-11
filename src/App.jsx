@@ -13,6 +13,7 @@ import useCustomerTierData from './hooks/useCustomerTierData'
 import usePlacementBridge from './hooks/usePlacementBridge'
 import useValueDensity from './hooks/useValueDensity'
 import YieldPanel from './components/YieldPanel'
+import TimeDepthPanel from './components/TimeDepthPanel'
 
 // Stable empty-params ref so the Yield hooks' useMemos hold across renders
 // (passing an inline {} would recompute the ranking/bridge every render).
@@ -439,6 +440,12 @@ function App() {
               selectedBankKey={selectedBankKey}
               onSelectBank={setSelectedBankKey}
             />
+          )}
+
+          {/* Time tab depth additions: hourly curve + tier decomposition (left-docked,
+              additive to the existing Time right-drawers) */}
+          {viewMode === 'time' && (
+            <TimeDepthPanel vd={valueDensity.vd} />
           )}
 
           {/* Combined Insights panel (heatmap + time modes) */}
