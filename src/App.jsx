@@ -14,6 +14,9 @@ import usePlacementBridge from './hooks/usePlacementBridge'
 import useValueDensity from './hooks/useValueDensity'
 import YieldPanel from './components/YieldPanel'
 import TimeDepthPanel from './components/TimeDepthPanel'
+import { computeSeatHourBase } from './metrics/seatHourMetrics'
+import { computePlacementRanking } from './metrics/placementRanking'
+import { computeValueDensityBase, weeklyHeartbeat } from './metrics/valueDensity'
 
 // Stable empty-params ref so the Yield hooks' useMemos hold across renders
 // (passing an inline {} would recompute the ranking/bridge every render).
@@ -22,6 +25,26 @@ const YIELD_PARAMS = {}
 // Two-tone floor highlight on the Yield tab: opportunity vs validation.
 const YIELD_FLAGGED_COLOR = '#f59e0b'   // amber - the 6 under-configured banks
 const YIELD_VALIDATED_COLOR = '#10b981' // green - the 3 saturated, already-optimal banks
+
+// Yield-tab descriptive window presets (weeks). The bridge stays pinned to the
+// full verified basis; only the ranking / flagged table / heartbeat re-aggregate.
+const YIELD_WINDOWS = [13, 8, 4]
+// "First bite" scenario scope (presentation only - reuses the per-bank bridge
+// math, changes no methodology parameter).
+const FIRST_BITE_BANKS = 3
+const FIRST_BITE_MACHINES_PER_BANK = 3
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const isoAddDays = (iso, delta) => {
+  const [y, m, d] = iso.split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d + delta))
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`
+}
+const isoToShort = (iso) => {
+  if (!iso) return ''
+  const [y, m, d] = iso.split('-').map(Number)
+  return `${d} ${MONTHS[m - 1]} ${y}`
+}
 
 function App() {
   const [currentView, setCurrentView] = useState('3d') // Only the 3D floor remains; Analytics tab retired
@@ -58,8 +81,11 @@ function App() {
   const [hoveredBank, setHoveredBank] = useState(null)
   const [bankTooltipPosition, setBankTooltipPosition] = useState(null)
 
-  // Yield tab: which flagged bank row is focused (drives floor focus in commit 2)
+  // Yield tab: which flagged bank row is focused (drives floor focus)
   const [selectedBankKey, setSelectedBankKey] = useState(null)
+  // Yield tab: descriptive data window (13/8/4 wk). Drives the ranking + table +
+  // heartbeat only; the dollar bridge stays pinned to the full verified basis.
+  const [yieldWindow, setYieldWindow] = useState(13)
 
   // Load casino data
   const {
@@ -107,11 +133,83 @@ function App() {
   const { base: seatHourBase, ranking, bridge } = usePlacementBridge(casinoData, YIELD_PARAMS)
   const valueDensity = useValueDensity(casinoData, YIELD_PARAMS)
 
-  const heartbeat = useMemo(() => valueDensity.weeklyHeartbeat(), [valueDensity])
+  // --- Yield descriptive window (13/8/4 wk) ------------------------------------
+  // Anchored to the most recent DD date; an N-week window is the last N*7 days.
+  // 13 wk == all committed data == the pinned bridge basis. Only the ranking /
+  // flagged table / heartbeat re-aggregate; the bridge stays pinned.
+  const yieldMaxDate = useMemo(() => {
+    let mx = null
+    for (const r of casinoData) if (r.zone === 'Zone DD' && r.date && (mx === null || r.date > mx)) mx = r.date
+    return mx
+  }, [casinoData])
+
+  const windowedRows = useMemo(() => {
+    if (yieldWindow === 13 || !yieldMaxDate) return casinoData
+    const cutoff = isoAddDays(yieldMaxDate, -(yieldWindow * 7 - 1))
+    return casinoData.filter((r) => r.date && r.date >= cutoff)
+  }, [casinoData, yieldWindow, yieldMaxDate])
+
+  const windowedBase = useMemo(
+    () => (yieldWindow === 13 ? seatHourBase : computeSeatHourBase(windowedRows, { tenureMode: 'span' })),
+    [yieldWindow, seatHourBase, windowedRows]
+  )
+  const windowedRanking = useMemo(
+    () => (yieldWindow === 13 ? ranking : computePlacementRanking(windowedBase)),
+    [yieldWindow, ranking, windowedBase]
+  )
+  const heartbeat = useMemo(
+    () => (yieldWindow === 13 ? valueDensity.weeklyHeartbeat() : weeklyHeartbeat(computeValueDensityBase(windowedBase))),
+    [yieldWindow, valueDensity, windowedBase]
+  )
+  const windowInfo = useMemo(() => {
+    const cutoff = yieldMaxDate ? isoAddDays(yieldMaxDate, -(yieldWindow * 7 - 1)) : null
+    return { weeks: yieldWindow, options: YIELD_WINDOWS, startLabel: isoToShort(cutoff), endLabel: isoToShort(yieldMaxDate) }
+  }, [yieldWindow, yieldMaxDate])
+
+  // Machine mix per flagged bank (windowed basis), for the per-row breakdown.
+  const machineMix = useMemo(() => {
+    const byBank = new Map()
+    windowedBase?.machines?.forEach((m) => {
+      let g = byBank.get(m.bankKey)
+      if (!g) { g = new Map(); byBank.set(m.bankKey, g) }
+      g.set(m.primaryFamily, (g.get(m.primaryFamily) || 0) + 1)
+    })
+    const out = new Map()
+    ;(windowedRanking?.flagged || []).forEach((b) => {
+      const g = byBank.get(b.bankKey) || new Map()
+      const parts = [...g.entries()].sort((x, y) => y[1] - x[1]).map(([family, count]) => ({ family, count }))
+      out.set(b.bankKey, { total: parts.reduce((s, p) => s + p.count, 0), parts, grandStar: g.get('GRAND STAR') || 0 })
+    })
+    return out
+  }, [windowedBase, windowedRanking])
+
+  // "First bite": top-N flagged banks (by pinned C1), a few machines each of the
+  // current product. Reuses the per-bank bridge math; no methodology change.
+  const firstBite = useMemo(() => {
+    if (!bridge?.perBank?.length || !ranking?.flagged?.length) return null
+    const byLabel = new Map(ranking.flagged.map((b) => [b.bankLabel, b]))
+    const curProdByKey = new Map(ranking.flagged.map((b) => [b.bankKey, b.currentProduct]))
+    const curCountByKey = new Map()
+    seatHourBase.machines.forEach((m) => {
+      if (curProdByKey.get(m.bankKey) === m.primaryFamily) curCountByKey.set(m.bankKey, (curCountByKey.get(m.bankKey) || 0) + 1)
+    })
+    const factor = bridge.components.c1.window > 0 ? bridge.components.c1.annual / bridge.components.c1.window : 4
+    const ranked = bridge.perBank.slice().sort((a, b) => b.c1 - a.c1).slice(0, FIRST_BITE_BANKS)
+    let windowSum = 0
+    const banks = ranked.map((pb) => {
+      const bk = byLabel.get(pb.bankLabel)?.bankKey
+      const cur = curCountByKey.get(bk) || 0
+      const take = Math.min(FIRST_BITE_MACHINES_PER_BANK, cur)
+      const windowC1 = cur > 0 ? pb.c1 * (take / cur) : 0
+      windowSum += windowC1
+      return { bankLabel: pb.bankLabel, currentProduct: pb.currentProduct, betterProduct: pb.betterProduct, curCount: cur, take, annual: windowC1 * factor }
+    })
+    return { annual: windowSum * factor, banks, nBanks: FIRST_BITE_BANKS, machinesPerBank: FIRST_BITE_MACHINES_PER_BANK }
+  }, [bridge, ranking, seatHourBase])
 
   // Where the >=0.80 (85%-capture) seat-hours physically sit across the flagged
   // banks - computed from the same atoms the metric verified, for the Sunday 13-16
-  // corroboration line.
+  // corroboration line. Pinned to the verified basis (corroborates the bridge).
   const constrainedSummary = useMemo(() => {
     const flaggedKeys = new Set((ranking?.flagged || []).map((b) => b.bankKey))
     if (flaggedKeys.size === 0) return null
@@ -138,23 +236,23 @@ function App() {
     return { threshold, totalConstrained: total, sundayWindowConstrained: sundayWindow, sundayWindowShare, overIndex, topCells }
   }, [ranking, bridge, valueDensity])
 
-  // bankKey -> [machineId] (blender_ids), resolved from the seat-hour base so the
-  // Yield tab can light a bank's machines on the floor.
+  // bankKey -> [machineId] (blender_ids), resolved from the windowed base so the
+  // Yield floor highlight matches the (windowed) flagged table.
   const bankMachineIds = useMemo(() => {
     const m = new Map()
-    seatHourBase?.machines?.forEach((mac, id) => {
+    windowedBase?.machines?.forEach((mac, id) => {
       if (!m.has(mac.bankKey)) m.set(mac.bankKey, [])
       m.get(mac.bankKey).push(id)
     })
     return m
-  }, [seatHourBase])
+  }, [windowedBase])
 
   // Yield-tab floor highlight: flagged banks (amber) vs validated saturated banks
   // (green). Selecting a table row focuses that bank and dims the rest.
   const yieldHighlight = useMemo(() => {
     if (!(currentView === '3d' && viewMode === 'yield')) return { ids: null, colors: null }
-    const flaggedKeys = (ranking?.flagged || []).map((b) => b.bankKey)
-    const validatedKeys = (ranking?.validation?.saturatedBanks || []).map((b) => b.bankKey)
+    const flaggedKeys = (windowedRanking?.flagged || []).map((b) => b.bankKey)
+    const validatedKeys = (windowedRanking?.validation?.saturatedBanks || []).map((b) => b.bankKey)
     const ids = new Set()
     const colors = new Map()
     const add = (bankKey, color) => {
@@ -168,7 +266,7 @@ function App() {
       flaggedKeys.forEach((k) => add(k, YIELD_FLAGGED_COLOR))
     }
     return { ids: ids.size ? ids : null, colors }
-  }, [currentView, viewMode, ranking, bankMachineIds, selectedBankKey])
+  }, [currentView, viewMode, windowedRanking, bankMachineIds, selectedBankKey])
 
   // Floor highlight is available in the drawer modes (heatmap heat-on / time
   // heat-off) and, driven by the flagged banks, the Yield tab. Keyed off viewMode.
@@ -249,6 +347,9 @@ function App() {
     }
     if (viewMode !== 'yield') setSelectedBankKey(null)
   }, [currentView, viewMode])
+
+  // Changing the Yield data window changes the flagged set - drop any stale focus.
+  useEffect(() => { setSelectedBankKey(null) }, [yieldWindow])
 
   useEffect(() => {
     // The Customer Demand panel re-scopes its own tier highlight on filter change
@@ -432,9 +533,13 @@ function App() {
           {/* Yield tab: placement ranking + dollar bridge + mechanism evidence */}
           {viewMode === 'yield' && (
             <YieldPanel
-              validation={ranking?.validation}
-              flagged={ranking?.flagged}
+              windowInfo={windowInfo}
+              onWindowChange={setYieldWindow}
+              validation={windowedRanking?.validation}
+              flagged={windowedRanking?.flagged}
+              machineMix={machineMix}
               bridge={bridge}
+              firstBite={firstBite}
               heartbeat={heartbeat}
               constrainedSummary={constrainedSummary}
               selectedBankKey={selectedBankKey}

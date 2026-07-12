@@ -154,7 +154,7 @@ const TimeDepthPanel = ({ vd }) => {
   return (
     <div style={PANEL}>
       <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>Deep analytics — watch the day breathe</div>
-      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 3 }}>Zone DD · any bank, hour by hour · 13-week window</div>
+      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 3 }}>Zone DD · any bank, hour by hour · Q3 FY26</div>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', flexDirection: 'column', gap: 3, fontSize: '0.66rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
