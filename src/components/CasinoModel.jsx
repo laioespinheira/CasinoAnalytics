@@ -367,11 +367,19 @@ const CasinoModel = ({
       console.log(`📊 CSV Analysis: ${csvObjects.length} CSV objects, ${modelObjects.length} 3D objects, ${missingFromModel.length} missing`)
 
       if (heatMapEnabled) {
-        // Heat map mode: colour by MEAN turnover per machine-hour, NOT the sum.
+        // Heat map mode: colour by a MEAN per machine-hour, NOT the sum.
         // DD machines have ~14 weeks of real per-hour rows while non-DD have a single
         // weekday-averaged row per (weekday, hour). Summing gives DD a ~14x artificial
         // advantage so every DD machine looks hot. The mean is comparable across both.
         // (Computed here, in-component, because the hook's getHeatMapData sums turnover.)
+        //
+        // Hourly tab (viewMode 'heatmap'): DD machines colour by theo_win (real $ theo
+        // earned), which is what actually matters for floor performance. Non-DD machines
+        // have no theo_win (null for every row) so they stay on turnover - they're floor
+        // aesthetics only, not part of the DD analysis. Theo and turnover are different
+        // scales, so each group gets its own percentile ramp. Overall keeps a single
+        // shared turnover ramp across both groups, unchanged.
+        const useTheoForDD = viewMode === 'heatmap'
         const heatFilters = {
           ...filters,
           occupancy: 'all',
@@ -384,24 +392,44 @@ const CasinoModel = ({
         rows.forEach((r) => {
           const id = r.blender_id
           if (!id) return
-          sums.set(id, (sums.get(id) || 0) + (r.turnover || 0))
+          const val = (useTheoForDD && ddMachineIds.has(id)) ? (r.theo_win || 0) : (r.turnover || 0)
+          sums.set(id, (sums.get(id) || 0) + val)
           counts.set(id, (counts.get(id) || 0) + 1)
         })
-        const meanTurnover = new Map()
+        const meanValue = new Map()
         counts.forEach((count, id) => {
-          meanTurnover.set(id, count ? sums.get(id) / count : 0)
+          meanValue.set(id, count ? sums.get(id) / count : 0)
         })
 
         // Recompute the colour-ramp bounds against the per-machine means.
-        const positiveMeans = [...meanTurnover.values()].filter((v) => v > 0).sort((a, b) => a - b)
-        const len = positiveMeans.length
-        const percentiles = len > 0
-          ? {
-              p25: positiveMeans[Math.floor(len * 0.25)] || 0,
-              p75: positiveMeans[Math.floor(len * 0.75)] || 0,
-              p90: positiveMeans[Math.floor(len * 0.90)] || 0
-            }
-          : { p25: 0, p75: 0, p90: 0 }
+        const computePercentiles = (values) => {
+          const len = values.length
+          return len > 0
+            ? {
+                p25: values[Math.floor(len * 0.25)] || 0,
+                p75: values[Math.floor(len * 0.75)] || 0,
+                p90: values[Math.floor(len * 0.90)] || 0
+              }
+            : { p25: 0, p75: 0, p90: 0 }
+        }
+
+        let theoPercentiles = null
+        let turnoverPercentiles = null
+        let sharedPercentiles = null
+        if (useTheoForDD) {
+          const ddMeans = []
+          const nonDdMeans = []
+          meanValue.forEach((v, id) => {
+            if (v <= 0) return
+            if (ddMachineIds.has(id)) ddMeans.push(v)
+            else nonDdMeans.push(v)
+          })
+          theoPercentiles = computePercentiles(ddMeans.sort((a, b) => a - b))
+          turnoverPercentiles = computePercentiles(nonDdMeans.sort((a, b) => a - b))
+        } else {
+          const positiveMeans = [...meanValue.values()].filter((v) => v > 0).sort((a, b) => a - b)
+          sharedPercentiles = computePercentiles(positiveMeans)
+        }
 
         // Reset all objects to their original colour first.
         objectMeshMap.forEach((mesh, meshName) => {
@@ -422,8 +450,11 @@ const CasinoModel = ({
           if (!mesh || !mesh.isMesh) return
 
           let color
-          if (meanTurnover.has(id)) {
-            color = getHeatMapColor(getHeatLevel(meanTurnover.get(id), percentiles))
+          if (meanValue.has(id)) {
+            const percentiles = useTheoForDD
+              ? (ddMachineIds.has(id) ? theoPercentiles : turnoverPercentiles)
+              : sharedPercentiles
+            color = getHeatMapColor(getHeatLevel(meanValue.get(id), percentiles))
           } else if (ddMachineIds.has(id)) {
             color = NO_DATA_GRAY
           } else {

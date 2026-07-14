@@ -586,7 +586,7 @@ function App() {
               machineData={pinnedMachine}
               metricNote={
                 viewMode === 'heatmap' && heatMapEnabled
-                  ? 'Turnover matches heat map (this hour, all games summed)'
+                  ? 'Theo/Machine matches heat map (this hour, DD only - pinned machines are always DD)'
                   : viewMode === 'overall' && heatMapEnabled
                     ? 'Turnover matches heat map (full day sum)'
                     : null
@@ -677,20 +677,23 @@ function App() {
             />
           )}
 
-          <GUI
-            backgroundColor={backgroundColor}
-            setBackgroundColor={setBackgroundColor}
-            ambientIntensity={ambientIntensity}
-            setAmbientIntensity={setAmbientIntensity}
-            directionalIntensity={directionalIntensity}
-            setDirectionalIntensity={setDirectionalIntensity}
-            tableColor={tableColor}
-            setTableColor={setTableColor}
-            etgColor={etgColor}
-            setEtgColor={setEtgColor}
-            specialObjectsColor={specialObjectsColor}
-            setSpecialObjectsColor={setSpecialObjectsColor}
-          />
+          {/* Controls panel (lil-gui: background/lighting/machine colours) - Overall tab only. */}
+          {viewMode === 'overall' && (
+            <GUI
+              backgroundColor={backgroundColor}
+              setBackgroundColor={setBackgroundColor}
+              ambientIntensity={ambientIntensity}
+              setAmbientIntensity={setAmbientIntensity}
+              directionalIntensity={directionalIntensity}
+              setDirectionalIntensity={setDirectionalIntensity}
+              tableColor={tableColor}
+              setTableColor={setTableColor}
+              etgColor={etgColor}
+              setEtgColor={setEtgColor}
+              specialObjectsColor={specialObjectsColor}
+              setSpecialObjectsColor={setSpecialObjectsColor}
+            />
+          )}
     </>
   )
 }

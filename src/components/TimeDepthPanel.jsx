@@ -22,8 +22,11 @@ const pct = (n) => (n == null ? '—' : `${(n * 100).toFixed(1)}%`)
 const int = (n) => Math.round(n || 0).toLocaleString()
 const hh = (h) => `${String(h).padStart(2, '0')}:00`
 
+// top: the Time tab's filter strip (zone/machine-type/week/day + labels + clear)
+// renders the nav bar at 148px tall - taller than the 110px other tabs' panels
+// assume. 156px clears it with a little breathing room.
 const PANEL = {
-  position: 'fixed', top: '110px', right: 0, bottom: 0, width: '452px',
+  position: 'fixed', top: '156px', right: 0, bottom: 0, width: '452px',
   background: '#ffffff', borderLeft: '1px solid #e5e7eb',
   boxShadow: '-4px 0 16px rgba(0,0,0,0.06)', overflowY: 'auto', zIndex: 850,
   padding: '18px 20px 40px', boxSizing: 'border-box'
