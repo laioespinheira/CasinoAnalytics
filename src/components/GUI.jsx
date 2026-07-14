@@ -20,8 +20,11 @@ const GUIComponent = ({
   useEffect(() => {
     // Create GUI
     const gui = new GUI()
+    // top: the Overall tab's nav (tabs row + filter strip) renders at 148px tall,
+    // which fully covers a 120px-top panel (nav is opaque white, z-index above
+    // this panel's 999). 156px clears it.
     gui.domElement.style.position = 'fixed'
-    gui.domElement.style.top = '120px'
+    gui.domElement.style.top = '156px'
     gui.domElement.style.right = '15px'
     gui.domElement.style.zIndex = '999'
     gui.close() // Start collapsed
