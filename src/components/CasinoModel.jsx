@@ -101,6 +101,7 @@ const BankLabelLayer = ({
             tier={tier}
             mode={labelMode}
             avgTurnover={entry?.avgTurnover ?? 0}
+            avgTheo={entry?.avgTheo ?? 0}
             occupancyPct={entry?.occupancyPct ?? 0}
           />
         )

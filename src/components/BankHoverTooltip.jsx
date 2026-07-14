@@ -162,7 +162,7 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
           textTransform: 'uppercase',
           letterSpacing: '0.06em'
         }}>
-          Turnover / Machine
+          Theo / Machine
         </div>
         <div style={{
           display: 'flex',
@@ -176,13 +176,8 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
             color: '#fff',
             lineHeight: 1
           }}>
-            {formatCompactCurrency(bankData.avgTurnover)}
+            {formatCompactCurrency(bankData.avgTheo)}
           </div>
-          {deltaPctLabel && (
-            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: deltaColor }}>
-              {deltaPctLabel}
-            </div>
-          )}
         </div>
       </div>
 

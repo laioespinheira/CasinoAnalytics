@@ -34,6 +34,7 @@ const BankLabel = ({
   tier = null,
   mode = 'name',
   avgTurnover = 0,
+  avgTheo = 0,
   occupancyPct = 0
 }) => {
   const lineRef = useRef()
@@ -63,9 +64,9 @@ const BankLabel = ({
             {bankName}
           </div>
           <div style={{ fontSize: '0.82rem', fontWeight: 800, lineHeight: 1.1 }}>
-            {formatCompactCurrency(avgTurnover)}
+            {formatCompactCurrency(avgTheo)}
           </div>
-          <div style={{ fontSize: '0.52rem', opacity: 0.85, marginTop: 2 }}>/ machine</div>
+          <div style={{ fontSize: '0.52rem', opacity: 0.85, marginTop: 2 }}>theo / machine</div>
         </>
       )
     }
@@ -170,6 +171,7 @@ function labelPropsEqual(prev, next) {
     prev.tier === next.tier &&
     prev.mode === next.mode &&
     prev.avgTurnover === next.avgTurnover &&
+    prev.avgTheo === next.avgTheo &&
     prev.occupancyPct === next.occupancyPct &&
     prev.position === next.position
   )

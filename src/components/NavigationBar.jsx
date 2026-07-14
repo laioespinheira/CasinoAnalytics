@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { DEMO_MODE } from '../config'
 
 const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, heatMapEnabled, setHeatMapEnabled, showBankLabels, setShowBankLabels, labelMode, setLabelMode, labelsOutliersOnly, setLabelsOutliersOnly, showInsightPanel, onToggleInsightPanel, showCustomerDemandPanel, onToggleCustomerDemandPanel, selectedTier, onTierChange, tierOptions = [], viewMode, onViewModeChange, externalFilters }) => {
   const [filters, setFilters] = useState({
@@ -317,6 +318,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
       <style>{sliderCSS}</style>
       <nav style={navStyles}>
         <div style={containerStyles}>
+        {/* Header row: logo left, tabs centered, balancing spacer right (no overlap) */}
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: 24 }}>
         {/* Logo on the left */}
         <h1 style={titleStyles}>
           <div style={iconStyles}>
@@ -327,9 +330,9 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
           Casino Analytics
         </h1>
 
-        {/* View Toggle - Centered (only main tabs) */}
-        <div style={{ position: 'absolute', left: '50%', display: 'flex', height: '47px' }}>
-          <div style={{ transform: 'translateX(-50%)', display: 'flex', alignItems: 'stretch', height: '100%' }}>
+        {/* View Toggle - Centered in the header row */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', height: '47px' }}>
+          <div style={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
             {/* Main Tabs - Always centered */}
             <button
               onClick={() => onViewChange('3d')}
@@ -359,101 +362,45 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           </div>
 
-          {/* 3D View Mode Submenu - Appears after centered tabs */}
+          {/* 3D View Mode Submenu - Appears after centered tabs.
+              Order: Overall -> Hourly (heatmap) -> Yield -> Time. */}
           {currentView === '3d' && onViewModeChange && (
             <div style={{ display: 'flex', alignItems: 'stretch', height: '100%' }}>
               <div style={{ width: '2px', background: '#3b82f6', height: '20px', alignSelf: 'center', margin: '0 16px' }} />
-
-              <button
-                onClick={() => onViewModeChange('overall')}
-                style={{
-                  background: viewMode === 'overall' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'overall' ? '#3b82f6' : '#9ca3af',
-                  border: 'none',
-                  borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'overall' ? '#3b82f6' : 'transparent',
-                  borderRadius: '0',
-                  padding: '10px 14px',
-                  fontSize: '0.9rem',
-                  fontWeight: viewMode === 'overall' ? '500' : '400',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >
-                Overall
-              </button>
-              <button
-                onClick={() => onViewModeChange('yield')}
-                style={{
-                  background: viewMode === 'yield' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'yield' ? '#3b82f6' : '#9ca3af',
-                  border: 'none',
-                  borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'yield' ? '#3b82f6' : 'transparent',
-                  borderRadius: '0',
-                  padding: '10px 14px',
-                  fontSize: '0.9rem',
-                  fontWeight: viewMode === 'yield' ? '500' : '400',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >
-                Yield
-              </button>
-              <button
-                onClick={() => onViewModeChange('time')}
-                style={{
-                  background: viewMode === 'time' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'time' ? '#3b82f6' : '#9ca3af',
-                  border: 'none',
-                  borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'time' ? '#3b82f6' : 'transparent',
-                  borderRadius: '0',
-                  padding: '10px 14px',
-                  fontSize: '0.9rem',
-                  fontWeight: viewMode === 'time' ? '500' : '400',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >
-                Time
-              </button>
-              <button
-                onClick={() => onViewModeChange('heatmap')}
-                style={{
-                  background: viewMode === 'heatmap' ? '#eff6ff' : 'transparent',
-                  color: viewMode === 'heatmap' ? '#3b82f6' : '#9ca3af',
-                  border: 'none',
-                  borderBottom: '3px solid',
-                  borderBottomColor: viewMode === 'heatmap' ? '#3b82f6' : 'transparent',
-                  borderRadius: '0',
-                  padding: '10px 14px',
-                  fontSize: '0.9rem',
-                  fontWeight: viewMode === 'heatmap' ? '500' : '400',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  boxSizing: 'border-box'
-                }}
-              >
-                Heatmap
-              </button>
+              {[
+                { key: 'overall', label: 'Overall' },
+                { key: 'heatmap', label: 'Hourly' },
+                { key: 'yield', label: 'Yield' },
+                { key: 'time', label: 'Time' }
+              ].map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => onViewModeChange(t.key)}
+                  style={{
+                    background: viewMode === t.key ? '#eff6ff' : 'transparent',
+                    color: viewMode === t.key ? '#3b82f6' : '#9ca3af',
+                    border: 'none',
+                    borderBottom: '3px solid',
+                    borderBottomColor: viewMode === t.key ? '#3b82f6' : 'transparent',
+                    borderRadius: '0',
+                    padding: '10px 14px',
+                    fontSize: '0.9rem',
+                    fontWeight: viewMode === t.key ? '500' : '400',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
           )}
+        </div>
+        <div style={{ minWidth: 200 }} aria-hidden="true" />
         </div>
 
         {/* Filters - Only show in 3D view; hidden in Yield (fixed 13-week DD analysis) */}
@@ -539,7 +486,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </div>
           </div>
 
-          {/* Game Type Filter */}
+          {/* Game Type Filter (hidden in demo) */}
+          {!DEMO_MODE && (
           <div style={filterGroupStyles}>
             <label style={labelStyles}>Game Type</label>
             <div style={dropdownContainerStyles}>
@@ -565,9 +513,10 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
               </select>
             </div>
           </div>
+          )}
 
-          {/* Customer Tier Filter - Heatmap + Time modes (Customer Demand lens) */}
-          {(viewMode === 'heatmap' || viewMode === 'time') && onTierChange && (
+          {/* Customer Tier Filter - Heatmap + Time modes (Customer Demand lens); hidden in demo */}
+          {!DEMO_MODE && (viewMode === 'heatmap' || viewMode === 'time') && onTierChange && (
             <div style={filterGroupStyles}>
               <label style={labelStyles}>Customer Tier</label>
               <div style={dropdownContainerStyles}>
@@ -721,8 +670,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           )}
 
-          {/* Combined Insights Panel Toggle - Heatmap + Time modes */}
-          {(viewMode === 'heatmap' || viewMode === 'time') && onToggleInsightPanel && (
+          {/* Combined Insights Panel Toggle - Heatmap + Time modes; hidden in demo */}
+          {!DEMO_MODE && (viewMode === 'heatmap' || viewMode === 'time') && onToggleInsightPanel && (
             <button
               onClick={onToggleInsightPanel}
               style={{
@@ -745,8 +694,8 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             </button>
           )}
 
-          {/* Customer Demand Panel Toggle - Heatmap + Time modes */}
-          {(viewMode === 'heatmap' || viewMode === 'time') && onToggleCustomerDemandPanel && (
+          {/* Customer Demand Panel Toggle - Heatmap + Time modes; hidden in demo */}
+          {!DEMO_MODE && (viewMode === 'heatmap' || viewMode === 'time') && onToggleCustomerDemandPanel && (
             <button
               onClick={onToggleCustomerDemandPanel}
               style={{
@@ -797,7 +746,7 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginLeft: 4 }}>
               {[
                 { id: 'name', label: 'Name' },
-                { id: 'avg', label: 'TO/Machine' },
+                { id: 'avg', label: 'Theo/Machine' },
                 { id: 'occ', label: 'Occupancy' }
               ].map(opt => (
                 <button

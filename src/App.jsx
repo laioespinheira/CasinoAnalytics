@@ -18,6 +18,7 @@ import TimeDepthPanel from './components/TimeDepthPanel'
 import { computeSeatHourBase } from './metrics/seatHourMetrics'
 import { computePlacementRanking } from './metrics/placementRanking'
 import { computeValueDensityBase, weeklyHeartbeat } from './metrics/valueDensity'
+import { DEMO_MODE } from './config'
 
 // Stable empty-params ref so the Yield hooks' useMemos hold across renders
 // (passing an inline {} would recompute the ranking/bridge every render).
@@ -26,11 +27,6 @@ const YIELD_PARAMS = {}
 // Two-tone floor highlight on the Yield tab: opportunity vs validation.
 const YIELD_FLAGGED_COLOR = '#f59e0b'   // amber - the 6 under-configured banks
 const YIELD_VALIDATED_COLOR = '#10b981' // green - the 3 saturated, already-optimal banks
-
-// Demo-simplification flag. When true, the Yield tab shows the pared-down pitch
-// surface (constrained-hours headline, fewer numbers, plain words). Set false to
-// restore the full analytical surface - nothing below is deleted, only hidden.
-const DEMO_MODE = true
 
 // Yield-tab descriptive window presets (weeks). The bridge stays pinned to the
 // full verified basis; only the ranking / flagged table / heartbeat re-aggregate.
@@ -111,7 +107,27 @@ function App() {
     getMachinesByLocation
   } = useCasinoData()
 
-  const bankRankings = useMemo(() => getBankRankings(filters), [getBankRankings, filters])
+  // Bank rankings, enriched with theo-per-machine so the floor labels + hover can
+  // show Theo/Machine. Theo is aggregated read-only from getFilteredData; the
+  // useCasinoData module is not modified.
+  const bankRankings = useMemo(() => {
+    const base = getBankRankings(filters)
+    const rows = getFilteredData({ ...filters, occupancy: 'all' }).filter((r) => r.date != null)
+    const theoAgg = new Map()
+    rows.forEach((r) => {
+      const key = r.machineType === 'Tables' ? `TABLE_${r.zone}` : `${r.zone}_${r.location}`
+      let e = theoAgg.get(key)
+      if (!e) { e = { theo: 0, machines: new Set() }; theoAgg.set(key, e) }
+      e.theo += (r.theo_win || 0)
+      if (r.blender_id) e.machines.add(r.blender_id)
+    })
+    const out = new Map()
+    base.forEach((entry, key) => {
+      const t = theoAgg.get(key)
+      out.set(key, { ...entry, avgTheo: t && t.machines.size ? t.theo / t.machines.size : 0 })
+    })
+    return out
+  }, [getBankRankings, getFilteredData, filters])
 
   const performanceInsights = useMemo(
     () => getPerformanceInsights(filters.zone === 'all' ? 'All' : filters.zone, filters),
@@ -346,6 +362,15 @@ function App() {
     setBankTooltipPosition(position)
   }
 
+  // Attach the summed theo win for the machine under the current filters (read-only
+  // from getFilteredData; the metrics module is not modified).
+  const withTheoWin = (metrics, blenderId) => {
+    if (!metrics || metrics.noData) return metrics
+    const rows = getFilteredData({ ...filters, occupancy: 'all' })
+      .filter((r) => r.date != null && r.blender_id === blenderId)
+    return { ...metrics, theoWin: rows.reduce((s, r) => s + (r.theo_win || 0), 0) }
+  }
+
   const handleMachineClick = (machineData, position) => {
     if (!machineData) {
       setPinnedMachine(null)
@@ -356,7 +381,7 @@ function App() {
 
     // Second click on the same machine -> open the detailed modal (clear pin so the small card does not stay on screen)
     if (pinnedMachine && pinnedMachine.blender_id === machineData.blender_id) {
-      setDetailModalMachine(getMachineMetrics(machineData.blender_id, filters) || machineData)
+      setDetailModalMachine(withTheoWin(getMachineMetrics(machineData.blender_id, filters) || machineData, machineData.blender_id))
       setPinnedMachine(null)
       setPinnedMachinePosition(null)
       return
@@ -570,8 +595,9 @@ function App() {
           )}
 
           {/* Bank hover tooltip - cursor-tracking, or docked top-right while a machine is pinned.
-              Suppressed on the Yield tab, which uses its own DD-only tooltip. */}
-          {viewMode !== 'yield' && hoveredBank && (bankTooltipPosition || pinnedMachine) && (
+              Suppressed on the Yield tab (its own DD-only tooltip). In demo mode, hover is
+              disabled for non-DD banks on every tab. */}
+          {viewMode !== 'yield' && hoveredBank && (!DEMO_MODE || !hoveredBank.isNonDd) && (bankTooltipPosition || pinnedMachine) && (
             <BankHoverTooltip
               position={bankTooltipPosition}
               bankUserData={hoveredBank}

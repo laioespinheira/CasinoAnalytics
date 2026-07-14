@@ -163,17 +163,19 @@ const MachineDetailCard = ({ machineData, onClose }) => {
   }
 
   const avgBetSize = machineData.avg_bet != null
-    ? Number(machineData.avg_bet).toFixed(2)
+    ? Number(machineData.avg_bet).toFixed(1)
     : machineData.stroke > 0
-      ? (machineData.turnover / machineData.stroke).toFixed(2)
-      : '0.00'
+      ? (machineData.turnover / machineData.stroke).toFixed(1)
+      : '0.0'
 
   const occupancyLabel = machineData.occupancy == null
     ? '—'
-    : `${Math.round(machineData.occupancy * 100)}%`
+    : `${(machineData.occupancy * 100).toFixed(1)}%`
   const isOccupied = machineData.occupancy != null && machineData.occupancy >= OCCUPANCY_THRESHOLD
-  const winValue = machineData.win
+  // Theo win (luck-adjusted), summed for this machine under the active filters.
+  const theoWinValue = machineData.theoWin != null ? machineData.theoWin : machineData.theo_win
   const dominantTier = machineData.dominant_tier
+  const oneDp = { minimumFractionDigits: 1, maximumFractionDigits: 1 }
 
   return (
     <>
@@ -360,7 +362,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 color: '#10b981',
                 marginBottom: '4px'
               }}>
-                {(machineData.stroke || 0).toLocaleString()}
+                {(machineData.stroke || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
               <div style={{
                 fontSize: '0.75rem',
@@ -392,7 +394,7 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 color: '#3b82f6',
                 marginBottom: '4px'
               }}>
-                ${(machineData.turnover || 0).toLocaleString()}
+                ${(machineData.turnover || 0).toLocaleString(undefined, oneDp)}
               </div>
               <div style={{
                 fontSize: '0.75rem',
@@ -480,21 +482,21 @@ const MachineDetailCard = ({ machineData, onClose }) => {
                 letterSpacing: '0.05em',
                 marginBottom: '8px'
               }}>
-                Win
+                Theo Win
               </div>
               <div style={{
                 fontSize: '1.75rem',
                 fontWeight: '800',
-                color: winValue != null && winValue < 0 ? '#ef4444' : '#10b981',
+                color: theoWinValue != null && theoWinValue < 0 ? '#ef4444' : '#10b981',
                 marginBottom: '4px'
               }}>
-                {winValue == null ? '—' : `$${Number(winValue).toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                {theoWinValue == null ? '—' : `$${Number(theoWinValue).toLocaleString(undefined, oneDp)}`}
               </div>
               <div style={{
                 fontSize: '0.75rem',
                 color: '#6b7280'
               }}>
-                House Win
+                Theoretical Win
               </div>
             </div>
 

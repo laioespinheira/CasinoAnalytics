@@ -23,10 +23,10 @@ const int = (n) => Math.round(n || 0).toLocaleString()
 const hh = (h) => `${String(h).padStart(2, '0')}:00`
 
 const PANEL = {
-  position: 'fixed', top: '110px', left: 0, bottom: 0, width: '380px',
-  background: '#ffffff', borderRight: '1px solid #e5e7eb',
-  boxShadow: '4px 0 16px rgba(0,0,0,0.06)', overflowY: 'auto', zIndex: 850,
-  padding: '18px 18px 40px', boxSizing: 'border-box'
+  position: 'fixed', top: '110px', right: 0, bottom: 0, width: '452px',
+  background: '#ffffff', borderLeft: '1px solid #e5e7eb',
+  boxShadow: '-4px 0 16px rgba(0,0,0,0.06)', overflowY: 'auto', zIndex: 850,
+  padding: '18px 20px 40px', boxSizing: 'border-box'
 }
 
 const selectStyle = {
@@ -44,9 +44,14 @@ const HourlyCurve = ({ curve }) => {
   const maxOcc = max((x) => x.occupancy)
   const maxAv = max((x) => x.theoPerAvailable)
   const maxOc = max((x) => x.theoPerOccupied)
-  const px = (h) => padL + (h / 23) * plotW
+  // Gaming-day axis: display starts at 04:00 and wraps to 03:00 (display rotation
+  // only - hour bucketing, peak windows, and analysis math are unchanged). Display
+  // index d maps to actual hour (4 + d) % 24.
+  const ordered = Array.from({ length: 24 }, (_, d) => hours[(4 + d) % 24])
+  const dOfHour = (h) => (h - 4 + 24) % 24
+  const px = (d) => padL + (d / 23) * plotW
   const py = (v, m) => padT + plotH - (m > 0 ? v / m : 0) * plotH
-  const path = (acc, m) => hours.map((x, i) => `${i === 0 ? 'M' : 'L'}${px(x.hour).toFixed(1)},${py(acc(x) || 0, m).toFixed(1)}`).join(' ')
+  const path = (acc, m) => ordered.map((x, d) => `${d === 0 ? 'M' : 'L'}${px(d).toFixed(1)},${py(acc(x) || 0, m).toFixed(1)}`).join(' ')
 
   const series = [
     { key: 'occ', color: '#3b82f6', label: 'Occupancy', path: path((x) => x.occupancy, maxOcc), peak: pct(maxOcc) },
@@ -57,14 +62,14 @@ const HourlyCurve = ({ curve }) => {
   return (
     <div>
       <svg width={W} height={H} style={{ display: 'block' }}>
-        {[0, 6, 12, 18, 23].map((h) => (
-          <g key={h}>
-            <line x1={px(h)} y1={padT} x2={px(h)} y2={padT + plotH} stroke="#f3f4f6" />
-            <text x={px(h)} y={H - 5} fontSize="8" fill="#9ca3af" textAnchor="middle">{h}</text>
+        {[0, 6, 12, 18, 23].map((d) => (
+          <g key={d}>
+            <line x1={px(d)} y1={padT} x2={px(d)} y2={padT + plotH} stroke="#f3f4f6" />
+            <text x={px(d)} y={H - 5} fontSize="8" fill="#9ca3af" textAnchor="middle">{(4 + d) % 24}</text>
           </g>
         ))}
         {curve.peakHour != null && (
-          <line x1={px(curve.peakHour)} y1={padT} x2={px(curve.peakHour)} y2={padT + plotH} stroke="#c7d2fe" strokeDasharray="3 2" />
+          <line x1={px(dOfHour(curve.peakHour))} y1={padT} x2={px(dOfHour(curve.peakHour))} y2={padT + plotH} stroke="#c7d2fe" strokeDasharray="3 2" />
         )}
         {series.map((s) => (
           <path key={s.key} d={s.path} fill="none" stroke={s.color} strokeWidth="1.6" />
