@@ -13,6 +13,7 @@ import useCustomerTierData from './hooks/useCustomerTierData'
 import usePlacementBridge from './hooks/usePlacementBridge'
 import useValueDensity from './hooks/useValueDensity'
 import YieldPanel from './components/YieldPanel'
+import YieldBankTooltip from './components/YieldBankTooltip'
 import TimeDepthPanel from './components/TimeDepthPanel'
 import { computeSeatHourBase } from './metrics/seatHourMetrics'
 import { computePlacementRanking } from './metrics/placementRanking'
@@ -26,9 +27,16 @@ const YIELD_PARAMS = {}
 const YIELD_FLAGGED_COLOR = '#f59e0b'   // amber - the 6 under-configured banks
 const YIELD_VALIDATED_COLOR = '#10b981' // green - the 3 saturated, already-optimal banks
 
+// Demo-simplification flag. When true, the Yield tab shows the pared-down pitch
+// surface (constrained-hours headline, fewer numbers, plain words). Set false to
+// restore the full analytical surface - nothing below is deleted, only hidden.
+const DEMO_MODE = true
+
 // Yield-tab descriptive window presets (weeks). The bridge stays pinned to the
 // full verified basis; only the ranking / flagged table / heartbeat re-aggregate.
-const YIELD_WINDOWS = [13, 8, 4]
+const YIELD_WINDOWS = DEMO_MODE ? [13, 8] : [13, 8, 4]
+// Demo headline capture rate for constrained (effectively-full) hours.
+const DEMO_CAPTURE_CONSTRAINED = 0.75
 // "First bite" scenario scope (presentation only - reuses the per-bank bridge
 // math, changes no methodology parameter).
 const FIRST_BITE_BANKS = 3
@@ -161,30 +169,74 @@ function App() {
     () => (yieldWindow === 13 ? valueDensity.weeklyHeartbeat() : weeklyHeartbeat(computeValueDensityBase(windowedBase))),
     [yieldWindow, valueDensity, windowedBase]
   )
+  // Full committed DD span (the pinned bridge basis). Day-count annualization
+  // (×365/days) so the partial final week doesn't skew the run-rate.
+  const yieldFullSpan = useMemo(() => {
+    let minD = null
+    let maxD = null
+    for (const r of casinoData) if (r.zone === 'Zone DD' && r.date) {
+      if (minD === null || r.date < minD) minD = r.date
+      if (maxD === null || r.date > maxD) maxD = r.date
+    }
+    const days = minD && maxD ? Math.round((Date.parse(maxD) - Date.parse(minD)) / 86400000) + 1 : 91
+    return { minD, maxD, days, weeks: Math.round(days / 7), annualFactor: 365 / days }
+  }, [casinoData])
+
   const windowInfo = useMemo(() => {
     const cutoff = yieldMaxDate ? isoAddDays(yieldMaxDate, -(yieldWindow * 7 - 1)) : null
-    return { weeks: yieldWindow, options: YIELD_WINDOWS, startLabel: isoToShort(cutoff), endLabel: isoToShort(yieldMaxDate) }
-  }, [yieldWindow, yieldMaxDate])
+    return {
+      weeks: yieldWindow,
+      options: YIELD_WINDOWS,
+      startLabel: isoToShort(cutoff),
+      endLabel: isoToShort(yieldMaxDate),
+      spanLabel: `${yieldWindow} weeks to ${isoToShort(yieldMaxDate)}`,
+      basisLabel: `${yieldFullSpan.weeks} weeks to ${isoToShort(yieldFullSpan.maxD)}`,
+      peakOccNote: "peak occ = a bank's mean machine occupancy during the peak windows (Fri/Sat 18–23, Sun 13–16) over the selected period — not a single hour."
+    }
+  }, [yieldWindow, yieldMaxDate, yieldFullSpan])
 
-  // Machine mix per flagged bank (windowed basis), for the per-row breakdown.
-  const machineMix = useMemo(() => {
-    const byBank = new Map()
+  // Per-DD-bank info (windowed): machine count + product mix + peak occ, plus the
+  // flagged recommendation. Feeds the table, the validation rows, and the hover.
+  const bankInfoByKey = useMemo(() => {
+    const mixByBank = new Map()
     windowedBase?.machines?.forEach((m) => {
-      let g = byBank.get(m.bankKey)
-      if (!g) { g = new Map(); byBank.set(m.bankKey, g) }
+      let g = mixByBank.get(m.bankKey)
+      if (!g) { g = new Map(); mixByBank.set(m.bankKey, g) }
       g.set(m.primaryFamily, (g.get(m.primaryFamily) || 0) + 1)
     })
-    const out = new Map()
-    ;(windowedRanking?.flagged || []).forEach((b) => {
-      const g = byBank.get(b.bankKey) || new Map()
+    const info = new Map()
+    ;(windowedRanking?.banks || []).forEach((b) => {
+      const g = mixByBank.get(b.bankKey) || new Map()
       const parts = [...g.entries()].sort((x, y) => y[1] - x[1]).map(([family, count]) => ({ family, count }))
-      out.set(b.bankKey, { total: parts.reduce((s, p) => s + p.count, 0), parts, grandStar: g.get('GRAND STAR') || 0 })
+      info.set(b.bankKey, { bankKey: b.bankKey, bankLabel: b.bankLabel, peakOcc: b.peakOcc, total: parts.reduce((s, p) => s + p.count, 0), parts, grandStar: g.get('GRAND STAR') || 0, flagged: false })
     })
-    return out
+    ;(windowedRanking?.flagged || []).forEach((b) => {
+      const e = info.get(b.bankKey)
+      if (e) {
+        e.flagged = true
+        e.currentProduct = b.currentProduct
+        e.betterProduct = b.betterProduct
+        e.gap = b.gap
+        e.currentYield = b.currentYield
+        e.achievableComparableYield = b.achievableComparableYield
+        e.benchmarkN = b.benchmarkN
+        e.affectedAvailableSeatHours = b.affectedAvailableSeatHours
+      }
+    })
+    return info
   }, [windowedBase, windowedRanking])
 
-  // "First bite": top-N flagged banks (by pinned C1), a few machines each of the
-  // current product. Reuses the per-bank bridge math; no methodology change.
+  // Demo headline: constrained (effectively-full) hours only, at 75% capture,
+  // day-count annualized. Pinned to the full verified basis.
+  const demoHeadline = useMemo(() => {
+    if (!DEMO_MODE || !bridge?.perBank?.length) return null
+    const windowUsd = bridge.perBank.reduce((s, pb) => s + pb.gap * pb.constrained * DEMO_CAPTURE_CONSTRAINED, 0)
+    return { annual: windowUsd * yieldFullSpan.annualFactor, capture: DEMO_CAPTURE_CONSTRAINED }
+  }, [bridge, yieldFullSpan])
+
+  // "First bite": top-N flagged banks, a few machines each of the current product.
+  // Ranked and valued on the active headline basis (demo: constrained-only @75%,
+  // day-annualized; full: segmented C1, ×52/13). Reuses the per-bank bridge math.
   const firstBite = useMemo(() => {
     if (!bridge?.perBank?.length || !ranking?.flagged?.length) return null
     const byLabel = new Map(ranking.flagged.map((b) => [b.bankLabel, b]))
@@ -193,19 +245,24 @@ function App() {
     seatHourBase.machines.forEach((m) => {
       if (curProdByKey.get(m.bankKey) === m.primaryFamily) curCountByKey.set(m.bankKey, (curCountByKey.get(m.bankKey) || 0) + 1)
     })
-    const factor = bridge.components.c1.window > 0 ? bridge.components.c1.annual / bridge.components.c1.window : 4
-    const ranked = bridge.perBank.slice().sort((a, b) => b.c1 - a.c1).slice(0, FIRST_BITE_BANKS)
+    const windowUsd = (pb) => (DEMO_MODE ? pb.gap * pb.constrained * DEMO_CAPTURE_CONSTRAINED : pb.c1)
+    const factor = DEMO_MODE
+      ? yieldFullSpan.annualFactor
+      : (bridge.components.c1.window > 0 ? bridge.components.c1.annual / bridge.components.c1.window : 4)
+    const ranked = bridge.perBank
+      .map((pb) => ({ ...pb, _usd: windowUsd(pb), bankKey: byLabel.get(pb.bankLabel)?.bankKey }))
+      .sort((a, b) => b._usd - a._usd)
+      .slice(0, FIRST_BITE_BANKS)
     let windowSum = 0
     const banks = ranked.map((pb) => {
-      const bk = byLabel.get(pb.bankLabel)?.bankKey
-      const cur = curCountByKey.get(bk) || 0
+      const cur = curCountByKey.get(pb.bankKey) || 0
       const take = Math.min(FIRST_BITE_MACHINES_PER_BANK, cur)
-      const windowC1 = cur > 0 ? pb.c1 * (take / cur) : 0
-      windowSum += windowC1
-      return { bankLabel: pb.bankLabel, currentProduct: pb.currentProduct, betterProduct: pb.betterProduct, curCount: cur, take, annual: windowC1 * factor }
+      const w = cur > 0 ? pb._usd * (take / cur) : 0
+      windowSum += w
+      return { bankLabel: pb.bankLabel, currentProduct: pb.currentProduct, betterProduct: pb.betterProduct, curCount: cur, take, annual: w * factor }
     })
     return { annual: windowSum * factor, banks, nBanks: FIRST_BITE_BANKS, machinesPerBank: FIRST_BITE_MACHINES_PER_BANK }
-  }, [bridge, ranking, seatHourBase])
+  }, [bridge, ranking, seatHourBase, yieldFullSpan])
 
   // Where the >=0.80 (85%-capture) seat-hours physically sit across the flagged
   // banks - computed from the same atoms the metric verified, for the Sunday 13-16
@@ -512,13 +569,24 @@ function App() {
             />
           )}
 
-          {/* Bank hover tooltip - cursor-tracking, or docked top-right while a machine is pinned. */}
-          {hoveredBank && (bankTooltipPosition || pinnedMachine) && (
+          {/* Bank hover tooltip - cursor-tracking, or docked top-right while a machine is pinned.
+              Suppressed on the Yield tab, which uses its own DD-only tooltip. */}
+          {viewMode !== 'yield' && hoveredBank && (bankTooltipPosition || pinnedMachine) && (
             <BankHoverTooltip
               position={bankTooltipPosition}
               bankUserData={hoveredBank}
               ranking={bankRankings}
               pinned={Boolean(pinnedMachine)}
+            />
+          )}
+
+          {/* Yield tab bank tooltip: DD banks only (non-DD hover disabled), no jargon. */}
+          {viewMode === 'yield' && hoveredBank && !hoveredBank.isNonDd && bankTooltipPosition && (
+            <YieldBankTooltip
+              position={bankTooltipPosition}
+              info={bankInfoByKey.get(hoveredBank.key)}
+              fallbackLabel={hoveredBank.isTableZone ? hoveredBank.zone : hoveredBank.location}
+              weeks={windowInfo.weeks}
             />
           )}
 
@@ -533,12 +601,14 @@ function App() {
           {/* Yield tab: placement ranking + dollar bridge + mechanism evidence */}
           {viewMode === 'yield' && (
             <YieldPanel
+              demoMode={DEMO_MODE}
               windowInfo={windowInfo}
               onWindowChange={setYieldWindow}
               validation={windowedRanking?.validation}
               flagged={windowedRanking?.flagged}
-              machineMix={machineMix}
+              bankInfo={bankInfoByKey}
               bridge={bridge}
+              demoHeadline={demoHeadline}
               firstBite={firstBite}
               heartbeat={heartbeat}
               constrainedSummary={constrainedSummary}
