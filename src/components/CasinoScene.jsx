@@ -30,7 +30,8 @@ const CasinoScene = ({
   labelMode,
   labelsOutliersOnly,
   highlightedMachineIds,
-  highlightColorMap
+  highlightColorMap,
+  heatValues
 }) => {
   const { camera } = useThree()
   const controlsRef = useRef()
@@ -87,9 +88,12 @@ const CasinoScene = ({
         labelsOutliersOnly={labelsOutliersOnly}
         highlightedMachineIds={highlightedMachineIds}
         highlightColorMap={highlightColorMap}
+        heatValues={heatValues}
       />
     </>
   )
 }
 
-export default CasinoScene
+// Memoized: App re-renders on every hover-tooltip position update; with stable
+// (useCallback'd) handler props this skips re-reconciling the whole 3D tree.
+export default React.memo(CasinoScene)

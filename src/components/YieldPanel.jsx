@@ -288,4 +288,5 @@ const YieldPanel = ({ demoMode, windowInfo, onWindowChange, validation, flagged,
   )
 }
 
-export default YieldPanel
+// Memoized: hover-tooltip renders in App must not re-render the panel.
+export default React.memo(YieldPanel)

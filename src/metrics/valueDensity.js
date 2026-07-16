@@ -19,6 +19,12 @@ import { DEFAULT_PARAMS as RANK_DEFAULTS } from './placementRanking.js'
 // Monday-first output order.
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+// Sentinel bankKey: aggregate across every DD bank (Time tab "All banks"). The
+// slice functions treat it as "all atoms / all machine-days" - same math, wider
+// group - so per-bank results recombine exactly to this aggregate.
+export const ALL_BANKS = '__ALL_DD__'
+export const ALL_BANKS_LABEL = 'All DD banks'
+
 export const TIER_ATTRIBUTION_CAVEAT =
   'Each machine-hour is wholly attributed to its dominant_tier, so shares are ' +
   '"occupied seat-hours by dominant tier", not "play by tier". Fractional ' +
@@ -95,11 +101,14 @@ export function computeValueDensityBase(base, params = {}) {
  * (optionally one weekday), over the 13 weeks. "Watch the day breathe."
  */
 export function bankHourlyCurve(vd, bankKey, { weekday = 'all' } = {}) {
-  const atoms = vd.index.atomsByBank.get(bankKey) || []
-  const mdTotal = vd.index.mdTotalByBank.get(bankKey) || 0
+  const isAll = bankKey === ALL_BANKS
+  const atoms = isAll ? vd.base.atoms : (vd.index.atomsByBank.get(bankKey) || [])
+  const mdTotal = isAll ? vd.base.machineDays.length : (vd.index.mdTotalByBank.get(bankKey) || 0)
   const availPerHour = weekday === 'all'
     ? mdTotal
-    : (vd.index.mdByBankWeekday.get(bankKey)?.get(weekday) || 0)
+    : (isAll
+        ? (vd.index.mdByWeekday.get(weekday) || 0)
+        : (vd.index.mdByBankWeekday.get(bankKey)?.get(weekday) || 0))
 
   const hours = Array.from({ length: 24 }, (_, hour) => ({
     hour,
@@ -131,7 +140,7 @@ export function bankHourlyCurve(vd, bankKey, { weekday = 'all' } = {}) {
 
   return {
     bankKey,
-    bankLabel: vd.index.bankLabel.get(bankKey) || labelFromKey(bankKey),
+    bankLabel: isAll ? ALL_BANKS_LABEL : (vd.index.bankLabel.get(bankKey) || labelFromKey(bankKey)),
     weekday,
     availableSeatHoursPerHour: availPerHour,
     hours,
@@ -147,7 +156,8 @@ export function bankHourlyCurve(vd, bankKey, { weekday = 'all' } = {}) {
  * mode: 'peak' (per-day peak windows), 'all', or 'custom' (weekday + hours).
  */
 export function bankTierDecomposition(vd, bankKey, { mode = 'peak', weekday = 'all', hours = 'all' } = {}) {
-  const atoms = vd.index.atomsByBank.get(bankKey) || []
+  const isAll = bankKey === ALL_BANKS
+  const atoms = isAll ? vd.base.atoms : (vd.index.atomsByBank.get(bankKey) || [])
   const peakWindows = vd.params.peakWindows
   const wkList = Array.isArray(weekday) ? new Set(weekday) : null
 
@@ -189,7 +199,7 @@ export function bankTierDecomposition(vd, bankKey, { mode = 'peak', weekday = 'a
 
   return {
     bankKey,
-    bankLabel: vd.index.bankLabel.get(bankKey) || labelFromKey(bankKey),
+    bankLabel: isAll ? ALL_BANKS_LABEL : (vd.index.bankLabel.get(bankKey) || labelFromKey(bankKey)),
     mode,
     windowLabel,
     sampleThreshold: thr,
@@ -280,6 +290,8 @@ export function bankConstrainedTexture(vd, bankKey) {
 export default {
   DEFAULT_DENSITY_PARAMS,
   TIER_ATTRIBUTION_CAVEAT,
+  ALL_BANKS,
+  ALL_BANKS_LABEL,
   computeValueDensityBase,
   bankHourlyCurve,
   bankTierDecomposition,

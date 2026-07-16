@@ -139,7 +139,8 @@ const CasinoModel = ({
   labelMode = 'name',
   labelsOutliersOnly = false,
   highlightedMachineIds = null,
-  highlightColorMap = null
+  highlightColorMap = null,
+  heatValues = null
 }) => {
   const gltf = useLoader(GLTFLoader, './models/casino_floor_map.glb')
   const groupRef = useRef()
@@ -148,6 +149,14 @@ const CasinoModel = ({
   const [allMeshes, setAllMeshes] = useState([])
   const [objectMeshMap, setObjectMeshMap] = useState(new Map())
   const [originalMaterials, setOriginalMaterials] = useState(new Map())
+  // Per-mesh working materials, created ONCE at model load and mutated in place on
+  // every recolor pass (color/emissive/opacity are uniform updates - no shader
+  // recompile, no per-machine material allocation):
+  //   base - dedicated clone of the mesh's original material (textures/props kept)
+  //          used for the original-look paths; baseColor restores its tint.
+  //   flat - plain MeshStandardMaterial used for heat / dim / highlight-tint,
+  //          matching the defaults of the previous per-pass `new` allocations.
+  const [workingMaterials, setWorkingMaterials] = useState(new Map())
   const [bankBoundingBoxes, setBankBoundingBoxes] = useState(new Map())
   const [bankLabels, setBankLabels] = useState([])
   const [nonDdInfo, setNonDdInfo] = useState(null)
@@ -307,18 +316,28 @@ const CasinoModel = ({
       const meshes = []
       const meshMap = new Map()
       const materialMap = new Map()
-      
+      const workingMap = new Map()
+
       object.traverse((child) => {
         if (child.isMesh) {
           meshes.push(child)
-          
+
           // Store original material for later restoration
           const originalMaterial = child.material.clone()
           materialMap.set(child.name, originalMaterial)
-          
+
+          // One-time working materials for the recolor passes (mutated, never
+          // reallocated). base is its own clone so the pristine original above
+          // is never touched.
+          workingMap.set(child.name, {
+            base: child.material.clone(),
+            baseColor: child.material.color ? child.material.color.clone() : new THREE.Color('#ffffff'),
+            flat: new THREE.MeshStandardMaterial()
+          })
+
           // Map mesh by blender object name for easy lookup
           meshMap.set(child.name, child)
-          
+
           if (TABLE_NAMES.includes(child.name)) {
             const material = new THREE.MeshStandardMaterial()
             child.material = material
@@ -327,11 +346,12 @@ const CasinoModel = ({
           }
         }
       })
-      
+
       setCubeObjects(cubes)
       setAllMeshes(meshes)
       setObjectMeshMap(meshMap)
       setOriginalMaterials(materialMap)
+      setWorkingMaterials(workingMap)
       
       // Reduced logging for performance
       console.log('🎯 3D Model loaded with', meshMap.size, 'objects')
@@ -356,7 +376,46 @@ const CasinoModel = ({
 
   // Handle filtering and highlighting
   useEffect(() => {
-    if (casinoData.length > 0 && objectMeshMap.size > 0 && originalMaterials.size > 0) {
+    if (casinoData.length > 0 && objectMeshMap.size > 0 && workingMaterials.size > 0) {
+
+      // Mutate-in-place helpers over the per-mesh working materials. Each sets
+      // every property the recolor paths ever touch, so a material carries no
+      // state over from the previous pass. Same visual output as the previous
+      // per-pass `new MeshStandardMaterial` / `originalMaterial.clone()` calls.
+      const applyBase = (mesh, w) => {
+        const m = w.base
+        m.color.copy(w.baseColor)
+        m.transparent = false
+        m.opacity = 1.0
+        mesh.material = m
+      }
+      const applyFlat = (mesh, w, color) => {
+        const m = w.flat
+        m.color.set(color)
+        m.emissive.set(0x000000)
+        m.emissiveIntensity = 1
+        m.transparent = false
+        m.opacity = 1.0
+        mesh.material = m
+      }
+      const applyDim = (mesh, w) => {
+        const m = w.flat
+        m.color.set('#d1d5db')
+        m.emissive.set(0x000000)
+        m.emissiveIntensity = 1
+        m.transparent = true
+        m.opacity = 0.35
+        mesh.material = m
+      }
+      const applyTint = (mesh, w, tint) => {
+        const m = w.flat
+        m.color.set(tint)
+        m.emissive.set(tint)
+        m.emissiveIntensity = 0.35
+        m.transparent = false
+        m.opacity = 1.0
+        mesh.material = m
+      }
 
       // Check which CSV objects are missing from 3D model
       const csvObjects = [...new Set(casinoData.map(item => item.blender_id))]
@@ -366,7 +425,7 @@ const CasinoModel = ({
       // Performance: Only log summary
       console.log(`📊 CSV Analysis: ${csvObjects.length} CSV objects, ${modelObjects.length} 3D objects, ${missingFromModel.length} missing`)
 
-      if (heatMapEnabled) {
+      if (heatMapEnabled || heatValues) {
         // Heat map mode: colour by a MEAN per machine-hour, NOT the sum.
         // DD machines have ~14 weeks of real per-hour rows while non-DD have a single
         // weekday-averaged row per (weekday, hour). Summing gives DD a ~14x artificial
@@ -379,27 +438,39 @@ const CasinoModel = ({
         // aesthetics only, not part of the DD analysis. Theo and turnover are different
         // scales, so each group gets its own percentile ramp. Overall keeps a single
         // shared turnover ramp across both groups, unchanged.
-        const useTheoForDD = viewMode === 'heatmap'
-        const heatFilters = {
-          ...filters,
-          occupancy: 'all',
-          ...(viewMode === 'overall' ? { hourOfDay: 'all' } : {})
-        }
-        const rows = getFilteredData(heatFilters)
+        //
+        // `heatValues` (Time tab): the caller supplies precomputed per-machine means
+        // (theo/machine-hour over the panel's selected slice); the ramp, bucketing and
+        // material logic are reused with a single shared ramp over those values (they
+        // are all DD machines on one metric). Hourly and Overall always enter with
+        // heatValues null, so their paths are untouched.
+        const useTheoForDD = !heatValues && viewMode === 'heatmap'
 
-        const sums = new Map()
-        const counts = new Map()
-        rows.forEach((r) => {
-          const id = r.blender_id
-          if (!id) return
-          const val = (useTheoForDD && ddMachineIds.has(id)) ? (r.theo_win || 0) : (r.turnover || 0)
-          sums.set(id, (sums.get(id) || 0) + val)
-          counts.set(id, (counts.get(id) || 0) + 1)
-        })
-        const meanValue = new Map()
-        counts.forEach((count, id) => {
-          meanValue.set(id, count ? sums.get(id) / count : 0)
-        })
+        let meanValue
+        if (heatValues) {
+          meanValue = heatValues
+        } else {
+          const heatFilters = {
+            ...filters,
+            occupancy: 'all',
+            ...(viewMode === 'overall' ? { hourOfDay: 'all' } : {})
+          }
+          const rows = getFilteredData(heatFilters)
+
+          const sums = new Map()
+          const counts = new Map()
+          rows.forEach((r) => {
+            const id = r.blender_id
+            if (!id) return
+            const val = (useTheoForDD && ddMachineIds.has(id)) ? (r.theo_win || 0) : (r.turnover || 0)
+            sums.set(id, (sums.get(id) || 0) + val)
+            counts.set(id, (counts.get(id) || 0) + 1)
+          })
+          meanValue = new Map()
+          counts.forEach((count, id) => {
+            meanValue.set(id, count ? sums.get(id) / count : 0)
+          })
+        }
 
         // Recompute the colour-ramp bounds against the per-machine means.
         const computePercentiles = (values) => {
@@ -433,12 +504,8 @@ const CasinoModel = ({
 
         // Reset all objects to their original colour first.
         objectMeshMap.forEach((mesh, meshName) => {
-          const originalMaterial = originalMaterials.get(meshName)
-          if (mesh.isMesh && originalMaterial) {
-            mesh.material = originalMaterial.clone()
-            mesh.material.transparent = false
-            mesh.material.opacity = 1.0
-          }
+          const w = workingMaterials.get(meshName)
+          if (mesh.isMesh && w) applyBase(mesh, w)
         })
 
         // Heat-colour every machine (DD and non-DD) that has rows in the slice:
@@ -447,7 +514,8 @@ const CasinoModel = ({
         //   - non-DD, no rows here  -> keep original colour (no grey)
         casinoDataMap.forEach((_data, id) => {
           const mesh = objectMeshMap.get(id)
-          if (!mesh || !mesh.isMesh) return
+          const w = workingMaterials.get(id)
+          if (!mesh || !mesh.isMesh || !w) return
 
           let color
           if (meanValue.has(id)) {
@@ -461,22 +529,15 @@ const CasinoModel = ({
             return // non-DD with no data this filter: leave original colour
           }
 
-          mesh.material = new THREE.MeshStandardMaterial({
-            color,
-            transparent: false,
-            opacity: 1.0
-          })
+          applyFlat(mesh, w, color)
         })
 
         if (highlightedMachineIds && highlightedMachineIds.size > 0) {
           objectMeshMap.forEach((mesh, meshName) => {
             if (!mesh.isMesh) return
             if (highlightedMachineIds.has(meshName)) return
-            mesh.material = new THREE.MeshStandardMaterial({
-              color: '#d1d5db',
-              transparent: true,
-              opacity: 0.35
-            })
+            const w = workingMaterials.get(meshName)
+            if (w) applyDim(mesh, w)
           })
         }
 
@@ -484,12 +545,10 @@ const CasinoModel = ({
         // Overall view (no heat map): show every object in its original/base colour
         // (the machine-type colours from the GUI). No occupancy gradient or muted grays.
         objectMeshMap.forEach((mesh, meshName) => {
-          const originalMaterial = originalMaterials.get(meshName)
-          if (mesh.isMesh && originalMaterial) {
-            mesh.material = originalMaterial.clone()
-            mesh.material.transparent = false
-            mesh.material.opacity = 1.0
-            
+          const w = workingMaterials.get(meshName)
+          if (mesh.isMesh && w) {
+            applyBase(mesh, w)
+
             // Apply custom colors based on machine type from CSV data
             const objectData = casinoDataMap.get(meshName)
             if (objectData) {
@@ -521,29 +580,19 @@ const CasinoModel = ({
         if (highlightedMachineIds && highlightedMachineIds.size > 0) {
           objectMeshMap.forEach((mesh, meshName) => {
             if (!mesh.isMesh) return
+            const w = workingMaterials.get(meshName)
+            if (!w) return
             if (highlightedMachineIds.has(meshName)) {
               const tint = highlightColorMap && highlightColorMap.get(meshName)
-              if (tint) {
-                mesh.material = new THREE.MeshStandardMaterial({
-                  color: tint,
-                  emissive: tint,
-                  emissiveIntensity: 0.35,
-                  transparent: false,
-                  opacity: 1.0
-                })
-              }
+              if (tint) applyTint(mesh, w, tint)
               return
             }
-            mesh.material = new THREE.MeshStandardMaterial({
-              color: '#d1d5db',
-              transparent: true,
-              opacity: 0.35
-            })
+            applyDim(mesh, w)
           })
         }
       }
     }
-  }, [casinoData, filters, objectMeshMap, originalMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, highlightColorMap, ddMachineIds])
+  }, [casinoData, filters, objectMeshMap, workingMaterials, getFilteredData, getHeatMapData, getDailyHeatMapData, heatMapEnabled, viewMode, tableColor, etgColor, specialObjectsColor, casinoDataMap, highlightedMachineIds, highlightColorMap, ddMachineIds, heatValues])
 
   // Hover -> bank tooltip (any bank, any zone).
   // The pointermove fires at the cursor's full sample rate, so we:

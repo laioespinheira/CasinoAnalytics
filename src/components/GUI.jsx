@@ -95,4 +95,6 @@ const GUIComponent = ({
   return null
 }
 
-export default GUIComponent
+// Memoized: props are state values + stable setState setters, so hover-driven
+// App renders skip this subtree entirely.
+export default React.memo(GUIComponent)

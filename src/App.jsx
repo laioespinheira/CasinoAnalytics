@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react'
+﻿import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import CasinoScene from './components/CasinoScene'
 import GUI from './components/GUI'
@@ -17,7 +17,7 @@ import YieldBankTooltip from './components/YieldBankTooltip'
 import TimeDepthPanel from './components/TimeDepthPanel'
 import { computeSeatHourBase } from './metrics/seatHourMetrics'
 import { computePlacementRanking } from './metrics/placementRanking'
-import { computeValueDensityBase, weeklyHeartbeat } from './metrics/valueDensity'
+import { computeValueDensityBase, weeklyHeartbeat, ALL_BANKS } from './metrics/valueDensity'
 import { DEMO_MODE } from './config'
 
 // Stable empty-params ref so the Yield hooks' useMemos hold across renders
@@ -27,6 +27,10 @@ const YIELD_PARAMS = {}
 // Two-tone floor highlight on the Yield tab: opportunity vs validation.
 const YIELD_FLAGGED_COLOR = '#f59e0b'   // amber - the 6 under-configured banks
 const YIELD_VALIDATED_COLOR = '#10b981' // green - the 3 saturated, already-optimal banks
+
+// Time-tab floor highlight for the panel's selected bank (blue = the app accent /
+// the panel's occupancy series; distinct from Yield's amber/green semantics).
+const TIME_BANK_COLOR = '#3b82f6'
 
 // Yield-tab descriptive window presets (weeks). The bridge stays pinned to the
 // full verified basis; only the ranking / flagged table / heartbeat re-aggregate.
@@ -87,6 +91,12 @@ function App() {
 
   // Yield tab: which flagged bank row is focused (drives floor focus)
   const [selectedBankKey, setSelectedBankKey] = useState(null)
+  // Time tab: the depth panel's own controls (bank / weekday / week-ending). They
+  // drive the panel's aggregation, the floor bank-highlight, and the slice heat -
+  // fully separate from the global filter strip and the Yield focus state.
+  const [timeBankKey, setTimeBankKey] = useState(ALL_BANKS)
+  const [timeWeekday, setTimeWeekday] = useState('all')
+  const [timeWeek, setTimeWeek] = useState('all')
   // Yield tab: descriptive data window (13/8/4 wk). Drives the ranking + table +
   // heartbeat only; the dollar bridge stays pinned to the full verified basis.
   const [yieldWindow, setYieldWindow] = useState(13)
@@ -167,24 +177,37 @@ function App() {
     return mx
   }, [casinoData])
 
-  const windowedRows = useMemo(() => {
-    if (yieldWindow === 13 || !yieldMaxDate) return casinoData
-    const cutoff = isoAddDays(yieldMaxDate, -(yieldWindow * 7 - 1))
-    return casinoData.filter((r) => r.date && r.date >= cutoff)
-  }, [casinoData, yieldWindow, yieldMaxDate])
+  // Keyed cache: each visited window (13/8/...) is computed once per dataset and
+  // then looked up, so switching back to an already-seen window is instant instead
+  // of a full base+ranking+heartbeat recompute. Values are byte-identical to the
+  // previous per-switch recompute - only the caching changed.
+  const yieldWindowCacheRef = useRef({ data: null, map: new Map() })
+  const windowed = useMemo(() => {
+    const cache = yieldWindowCacheRef.current
+    if (cache.data !== casinoData) { cache.data = casinoData; cache.map.clear() }
+    if (cache.map.has(yieldWindow)) return cache.map.get(yieldWindow)
+    let entry
+    if (yieldWindow === 13 || !yieldMaxDate) {
+      entry = { base: seatHourBase, ranking, heartbeat: valueDensity.weeklyHeartbeat() }
+    } else {
+      const cutoff = isoAddDays(yieldMaxDate, -(yieldWindow * 7 - 1))
+      const base = computeSeatHourBase(
+        casinoData.filter((r) => r.date && r.date >= cutoff),
+        { tenureMode: 'span' }
+      )
+      entry = {
+        base,
+        ranking: computePlacementRanking(base),
+        heartbeat: weeklyHeartbeat(computeValueDensityBase(base))
+      }
+    }
+    cache.map.set(yieldWindow, entry)
+    return entry
+  }, [casinoData, yieldWindow, yieldMaxDate, seatHourBase, ranking, valueDensity])
 
-  const windowedBase = useMemo(
-    () => (yieldWindow === 13 ? seatHourBase : computeSeatHourBase(windowedRows, { tenureMode: 'span' })),
-    [yieldWindow, seatHourBase, windowedRows]
-  )
-  const windowedRanking = useMemo(
-    () => (yieldWindow === 13 ? ranking : computePlacementRanking(windowedBase)),
-    [yieldWindow, ranking, windowedBase]
-  )
-  const heartbeat = useMemo(
-    () => (yieldWindow === 13 ? valueDensity.weeklyHeartbeat() : weeklyHeartbeat(computeValueDensityBase(windowedBase))),
-    [yieldWindow, valueDensity, windowedBase]
-  )
+  const windowedBase = windowed.base
+  const windowedRanking = windowed.ranking
+  const heartbeat = windowed.heartbeat
   // Full committed DD span (the pinned bridge basis). Day-count annualization
   // (×365/days) so the partial final week doesn't skew the run-rate.
   const yieldFullSpan = useMemo(() => {
@@ -309,6 +332,77 @@ function App() {
     return { threshold, totalConstrained: total, sundayWindowConstrained: sundayWindow, sundayWindowShare, overIndex, topCells }
   }, [ranking, bridge, valueDensity])
 
+  // --- Time tab: panel data + floor linking ------------------------------------
+  // Week-ending options from the committed DD rows (non-DD rows have no week_ending).
+  const timeWeekEndings = useMemo(() => {
+    const set = new Set()
+    for (const r of casinoData) if (r.zone === 'Zone DD' && r.week_ending) set.add(r.week_ending)
+    return [...set].sort().reverse()
+  }, [casinoData])
+
+  // Week slice for the Time panel - same re-aggregation approach as the Yield
+  // window selector: filter the committed rows, rebuild the seat-hour base and the
+  // value-density index over them. 'all' reuses the full verified basis untouched.
+  // Keyed cache like the Yield windows: each visited week is built once per
+  // dataset, so flipping between weeks is a lookup, not a rebuild.
+  const timeWeekCacheRef = useRef({ data: null, map: new Map() })
+  const timeVd = useMemo(() => {
+    if (timeWeek === 'all') return valueDensity.vd
+    const cache = timeWeekCacheRef.current
+    if (cache.data !== casinoData) { cache.data = casinoData; cache.map.clear() }
+    if (cache.map.has(timeWeek)) return cache.map.get(timeWeek)
+    const rows = casinoData.filter((r) => r.week_ending === timeWeek)
+    const sliced = computeValueDensityBase(computeSeatHourBase(rows, { tenureMode: 'span' }))
+    cache.map.set(timeWeek, sliced)
+    return sliced
+  }, [timeWeek, casinoData, valueDensity])
+
+  // bankKey -> [machineId] from the FULL basis (bank membership is stable; the
+  // highlight should not flicker with the week slice).
+  const timeBankMachineIds = useMemo(() => {
+    const m = new Map()
+    valueDensity.base.machines.forEach((mac, id) => {
+      if (!m.has(mac.bankKey)) m.set(mac.bankKey, [])
+      m.get(mac.bankKey).push(id)
+    })
+    return m
+  }, [valueDensity])
+
+  // Time-tab floor highlight: the panel's selected bank lights up, the rest dims.
+  // Same gated highlightColorMap mechanism as the Yield row-focus, keyed to
+  // viewMode === 'time' with its own state; "All banks" means no highlight.
+  const timeHighlight = useMemo(() => {
+    if (!(currentView === '3d' && viewMode === 'time') || timeBankKey === ALL_BANKS) {
+      return { ids: null, colors: null }
+    }
+    const ids = new Set(timeBankMachineIds.get(timeBankKey) || [])
+    const colors = new Map()
+    ids.forEach((id) => colors.set(id, TIME_BANK_COLOR))
+    return { ids: ids.size ? ids : null, colors }
+  }, [currentView, viewMode, timeBankKey, timeBankMachineIds])
+
+  // Time-tab slice heat: when a week and/or weekday is selected, the floor becomes
+  // a heatmap of that slice - per-machine MEAN theo per played machine-hour over
+  // the selected period, computed from the same verified atoms the panel uses.
+  // Percentile bounds are recomputed downstream on exactly these values. Null when
+  // nothing is selected (and on every other tab), so Hourly's own heat path -
+  // heatMapEnabled with no override - is never affected.
+  const timeHeatValues = useMemo(() => {
+    if (!(currentView === '3d' && viewMode === 'time')) return null
+    if (timeWeek === 'all' && timeWeekday === 'all') return null
+    const sums = new Map()
+    const counts = new Map()
+    for (const a of valueDensity.base.atoms) {
+      if (timeWeek !== 'all' && a.weekEnding !== timeWeek) continue
+      if (timeWeekday !== 'all' && a.weekday !== timeWeekday) continue
+      sums.set(a.machineId, (sums.get(a.machineId) || 0) + a.theo)
+      counts.set(a.machineId, (counts.get(a.machineId) || 0) + 1)
+    }
+    const means = new Map()
+    counts.forEach((n, id) => means.set(id, n > 0 ? sums.get(id) / n : 0))
+    return means
+  }, [currentView, viewMode, timeWeek, timeWeekday, valueDensity])
+
   // bankKey -> [machineId] (blender_ids), resolved from the windowed base so the
   // Yield floor highlight matches the (windowed) flagged table.
   const bankMachineIds = useMemo(() => {
@@ -345,33 +439,37 @@ function App() {
   // heat-off) and, driven by the flagged banks, the Yield tab. Keyed off viewMode.
   const highlightedMachineIds = useMemo(() => {
     if (viewMode === 'yield') return yieldHighlight.ids
+    if (viewMode === 'time' && timeHighlight.ids) return timeHighlight.ids
     if (!highlightTarget?.machineIds?.length || (viewMode !== 'heatmap' && viewMode !== 'time')) {
       return null
     }
     return new Set(highlightTarget.machineIds)
-  }, [highlightTarget, viewMode, yieldHighlight])
+  }, [highlightTarget, viewMode, yieldHighlight, timeHighlight])
 
-  const handleFilterChange = (newFilters) => {
+  // Handlers passed into the memoized children (NavigationBar, CasinoScene, ...)
+  // are useCallback'd so a hover-driven App render doesn't change their identity
+  // and force those children to re-render.
+  const handleFilterChange = useCallback((newFilters) => {
     // Merge so App-only fields (e.g. weekEnding, which NavigationBar does not emit)
     // survive updates coming from the nav bar.
     setFilters(prev => ({ ...prev, ...newFilters }))
-  }
+  }, [])
 
-  const handleBankHover = (bankData, position) => {
+  const handleBankHover = useCallback((bankData, position) => {
     setHoveredBank(bankData)
     setBankTooltipPosition(position)
-  }
+  }, [])
 
   // Attach the summed theo win for the machine under the current filters (read-only
   // from getFilteredData; the metrics module is not modified).
-  const withTheoWin = (metrics, blenderId) => {
+  const withTheoWin = useCallback((metrics, blenderId) => {
     if (!metrics || metrics.noData) return metrics
     const rows = getFilteredData({ ...filters, occupancy: 'all' })
       .filter((r) => r.date != null && r.blender_id === blenderId)
     return { ...metrics, theoWin: rows.reduce((s, r) => s + (r.theo_win || 0), 0) }
-  }
+  }, [getFilteredData, filters])
 
-  const handleMachineClick = (machineData, position) => {
+  const handleMachineClick = useCallback((machineData, position) => {
     if (!machineData) {
       setPinnedMachine(null)
       setPinnedMachinePosition(null)
@@ -391,29 +489,29 @@ function App() {
     setPinnedMachine(getMachineMetrics(machineData.blender_id, filters) || machineData)
     setPinnedMachinePosition(position)
     setDetailModalMachine(null)
-  }
+  }, [pinnedMachine, getMachineMetrics, filters, withTheoWin])
 
-  const handleDetailModalClose = () => {
+  const handleDetailModalClose = useCallback(() => {
     setDetailModalMachine(null)
     setPinnedMachine(null)
     setPinnedMachinePosition(null)
-  }
+  }, [])
 
-  const handleToggleInsightPanel = () => {
+  const handleToggleInsightPanel = useCallback(() => {
     setShowInsightPanel((prev) => {
       const next = !prev
       if (next) setShowCustomerDemandPanel(false) // right-drawer panels are mutually exclusive
       return next
     })
-  }
+  }, [])
 
-  const handleToggleCustomerDemandPanel = () => {
+  const handleToggleCustomerDemandPanel = useCallback(() => {
     setShowCustomerDemandPanel((prev) => {
       const next = !prev
       if (next) setShowInsightPanel(false)
       return next
     })
-  }
+  }, [])
 
   // Auto-enable heatmap and set defaults when switching to heatmap mode
   useEffect(() => {
@@ -428,6 +526,8 @@ function App() {
       setHighlightTarget(null)
     }
     if (viewMode !== 'yield') setSelectedBankKey(null)
+    // Round-trip rule (as on Yield): leaving Time clears its bank highlight.
+    if (viewMode !== 'time') setTimeBankKey(ALL_BANKS)
   }, [currentView, viewMode])
 
   // Changing the Yield data window changes the flagged set - drop any stale focus.
@@ -574,7 +674,8 @@ function App() {
                 labelMode={labelMode}
                 labelsOutliersOnly={labelsOutliersOnly}
                 highlightedMachineIds={highlightedMachineIds}
-                highlightColorMap={viewMode === 'yield' ? yieldHighlight.colors : null}
+                highlightColorMap={viewMode === 'yield' ? yieldHighlight.colors : viewMode === 'time' ? timeHighlight.colors : null}
+                heatValues={viewMode === 'time' ? timeHeatValues : null}
               />
             </Canvas>
           </div>
@@ -643,10 +744,22 @@ function App() {
             />
           )}
 
-          {/* Time tab depth additions: hourly curve + tier decomposition (left-docked,
-              additive to the existing Time right-drawers) */}
+          {/* Time tab depth panel: hourly curve + tier decomposition, with its own
+              bank / weekday / week controls (state lives here so the floor highlight
+              and slice heat stay in lockstep with the panel). Bank options come from
+              the full basis so the list is stable across week slices. */}
           {viewMode === 'time' && (
-            <TimeDepthPanel vd={valueDensity.vd} />
+            <TimeDepthPanel
+              vd={timeVd}
+              bankOptions={valueDensity.vd.banks}
+              weekEndings={timeWeekEndings}
+              bankKey={timeBankKey}
+              weekday={timeWeekday}
+              week={timeWeek}
+              onBankChange={setTimeBankKey}
+              onWeekdayChange={setTimeWeekday}
+              onWeekChange={setTimeWeek}
+            />
           )}
 
           {/* Combined Insights panel (heatmap + time modes) */}

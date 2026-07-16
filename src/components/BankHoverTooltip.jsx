@@ -1,5 +1,14 @@
 import React from 'react'
-import { formatCompactCurrency, formatDeltaPct } from '../utils/format'
+import { formatCompactCurrency } from '../utils/format'
+
+// Deliberately minimal hover card: bank name, zone, machine count, rank, and
+// Theo/Machine. Everything it shows comes straight off the precomputed
+// bankRankings entry - no per-show aggregation or derived math in here.
+//
+// NOTE on the removed lines: the old card also printed total turnover and
+// "stroke $xxK". Stroke is a COUNT of bets placed (see BankPanel "total bets
+// placed" and avgBet = turnover / stroke), so running it through the currency
+// formatter was a misapplication - removed rather than reformatted.
 
 // Semantic performance palette. Reserved for performance signalling only.
 const PERF = {
@@ -8,9 +17,7 @@ const PERF = {
   midBg: 'rgba(245, 158, 11, 0.16)',
   midFg: '#f59e0b',
   lowBg: 'rgba(239, 68, 68, 0.16)',
-  lowFg: '#ef4444',
-  emptyBg: 'rgba(255, 255, 255, 0.06)',
-  emptyFg: 'rgba(255, 255, 255, 0.2)'
+  lowFg: '#ef4444'
 }
 
 // Affordance / focus color. Never used for performance.
@@ -29,12 +36,12 @@ const CardShell = ({ positionStyle, children }) => (
     style={{
       position: 'fixed',
       ...positionStyle,
-      width: 272,
+      width: 212,
       background: '#1a1d2a',
       border: '1px solid rgba(255, 255, 255, 0.06)',
       borderTopColor: 'rgba(255, 255, 255, 0.14)',
-      borderRadius: 14,
-      padding: 18,
+      borderRadius: 12,
+      padding: 14,
       pointerEvents: 'none',
       zIndex: 10000,
       boxShadow: '0 24px 48px -16px rgba(0,0,0,0.5), 0 8px 16px -8px rgba(0,0,0,0.4)',
@@ -44,12 +51,6 @@ const CardShell = ({ positionStyle, children }) => (
     }}
   >
     {children}
-    <style>{`
-      @keyframes tooltipFadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-    `}</style>
   </div>
 )
 
@@ -61,11 +62,11 @@ const BankIdentity = ({ bankName, zoneLabel, bankData }) => {
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
-      gap: 12
+      gap: 10
     }}>
       <div style={{ minWidth: 0 }}>
         <div style={{
-          fontSize: '1.05rem',
+          fontSize: '0.95rem',
           fontWeight: 700,
           color: '#fff',
           overflow: 'hidden',
@@ -75,7 +76,7 @@ const BankIdentity = ({ bankName, zoneLabel, bankData }) => {
           {bankName || 'Unknown Bank'}
         </div>
         <div style={{
-          fontSize: '0.7rem',
+          fontSize: '0.66rem',
           color: 'rgba(255,255,255,0.5)',
           marginTop: 2,
           letterSpacing: '0.04em'
@@ -89,16 +90,16 @@ const BankIdentity = ({ bankName, zoneLabel, bankData }) => {
           flexShrink: 0,
           display: 'inline-flex',
           alignItems: 'baseline',
-          gap: 4,
-          padding: '5px 10px',
+          gap: 3,
+          padding: '4px 8px',
           borderRadius: 999,
           background: rankTier.bg,
           color: rankTier.fg,
-          fontSize: '0.78rem',
+          fontSize: '0.74rem',
           fontWeight: 700
         }}>
           <span style={{ opacity: 0.8 }}>#</span>{bankData.rank}
-          <span style={{ opacity: 0.5, fontWeight: 500, fontSize: '0.7rem' }}>
+          <span style={{ opacity: 0.5, fontWeight: 500, fontSize: '0.66rem' }}>
             / {bankData.total}
           </span>
         </div>
@@ -130,8 +131,8 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
       <CardShell positionStyle={wrapperPositionStyle}>
         <BankIdentity bankName={bankName} zoneLabel={zoneLabel} />
         <div style={{
-          marginTop: 14,
-          fontSize: '0.85rem',
+          marginTop: 10,
+          fontSize: '0.8rem',
           color: 'rgba(255,255,255,0.5)'
         }}>
           {bankUserData.isNonDd ? 'Averaged data only' : 'No data for the current filters.'}
@@ -140,24 +141,13 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
     )
   }
 
-  const total = bankData.total || 1
-  const rank = bankData.rank || total
-  const rankTier = getRankTier(rank, total)
-  const deltaPctLabel = formatDeltaPct(bankData.avgTurnover, bankData.zoneMedianAvgTurnover)
-  const deltaColor = bankData.avgTurnover > bankData.zoneMedianAvgTurnover
-    ? PERF.highFg
-    : bankData.avgTurnover < bankData.zoneMedianAvgTurnover
-      ? PERF.lowFg
-      : 'rgba(255,255,255,0.55)'
-  const markerLeft = total > 1 ? ((rank - 1) / (total - 1)) * 100 : 0
-
   return (
     <CardShell positionStyle={wrapperPositionStyle}>
       <BankIdentity bankName={bankName} zoneLabel={zoneLabel} bankData={bankData} />
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 11 }}>
         <div style={{
-          fontSize: '0.68rem',
+          fontSize: '0.64rem',
           color: 'rgba(255,255,255,0.45)',
           textTransform: 'uppercase',
           letterSpacing: '0.06em'
@@ -167,74 +157,28 @@ const BankHoverTooltip = ({ position, bankUserData, ranking, pinned = false }) =
         <div style={{
           display: 'flex',
           alignItems: 'baseline',
-          gap: 10,
-          marginTop: 4
+          justifyContent: 'space-between',
+          gap: 8,
+          marginTop: 3
         }}>
           <div style={{
-            fontSize: '1.7rem',
+            fontSize: '1.4rem',
             fontWeight: 700,
             color: '#fff',
             lineHeight: 1
           }}>
             {formatCompactCurrency(bankData.avgTheo)}
           </div>
+          <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
+            {bankData.machineCount || 0} machines
+          </div>
         </div>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <div style={{
-          position: 'relative',
-          height: 8,
-          borderRadius: 999,
-          overflow: 'visible',
-          background: 'linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%)'
-        }}>
-          <div style={{
-            position: 'absolute',
-            left: `${markerLeft}%`,
-            top: -3,
-            transform: 'translateX(-50%)',
-            width: 14,
-            height: 14,
-            borderRadius: '50%',
-            background: '#fff',
-            boxShadow: `0 0 0 3px #1a1d2a, 0 0 0 4px ${rankTier.fg}`
-          }} />
-        </div>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: 8,
-          fontSize: '0.65rem',
-          color: 'rgba(255,255,255,0.4)',
-          letterSpacing: '0.05em'
-        }}>
-          <span>BEST IN {zoneLabel.toUpperCase()}</span>
-          <span>WORST</span>
-        </div>
-      </div>
-
-      <div style={{
-        marginTop: 16,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        gap: 8,
-        fontSize: '0.72rem',
-        color: 'rgba(255,255,255,0.55)'
-      }}>
-        <span>{formatCompactCurrency(bankData.turnover)} total</span>
-        <span>{bankData.machineCount || 0} machines</span>
-        {bankData.stroke != null && (
-          <span>stroke {formatCompactCurrency(bankData.stroke)}</span>
-        )}
       </div>
 
       {!pinned && (
         <div style={{
           marginTop: 10,
-          fontSize: '0.65rem',
+          fontSize: '0.62rem',
           color: 'rgba(255,255,255,0.35)',
           letterSpacing: '0.04em'
         }}>

@@ -26,7 +26,10 @@ const useValueDensity = (casinoData, params = {}) => {
   )
   const vd = useMemo(() => computeValueDensityBase(base, params), [base, params])
 
-  return {
+  // The return object must be identity-stable: App holds it whole and keys
+  // expensive memos (heartbeat, constrained summary, Time slices) on it. An
+  // unmemoized literal here invalidated all of them on every App render.
+  return useMemo(() => ({
     base,
     vd,
     banks: vd.banks,
@@ -34,7 +37,7 @@ const useValueDensity = (casinoData, params = {}) => {
     bankHourlyCurve: (bankKey, opts) => bankHourlyCurve(vd, bankKey, opts),
     bankTierDecomposition: (bankKey, opts) => bankTierDecomposition(vd, bankKey, opts),
     bankConstrainedTexture: (bankKey) => bankConstrainedTexture(vd, bankKey)
-  }
+  }), [base, vd])
 }
 
 export default useValueDensity

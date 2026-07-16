@@ -403,8 +403,10 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
         <div style={{ minWidth: 200 }} aria-hidden="true" />
         </div>
 
-        {/* Filters - Only show in 3D view; hidden in Yield (fixed 13-week DD analysis) */}
-        {currentView === '3d' && viewMode !== 'yield' && (
+        {/* Filters - Only show in 3D view; hidden in Yield (fixed 13-week DD analysis).
+            In demo mode also hidden in Time: the TimeDepthPanel carries its own
+            bank/day/week controls there (gated, restorable like the other removals). */}
+        {currentView === '3d' && viewMode !== 'yield' && !(DEMO_MODE && viewMode === 'time') && (
         <div style={filtersContainerStyles}>
           {/* Zone Filter */}
           <div style={filterGroupStyles}>
@@ -828,4 +830,5 @@ const NavigationBar = ({ onFilterChange, casinoData, currentView, onViewChange, 
   )
 }
 
-export default NavigationBar
+// Memoized: hover-tooltip renders in App must not re-render the filter strip.
+export default React.memo(NavigationBar)
